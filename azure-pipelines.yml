@@ -23,9 +23,9 @@ steps:
     cd ${Build.SourcesDirectory}
     npm install -g @angular/cli
     npm install
-
-    
     ng build
+    cd ./dist/angular-odata
+    npm version patch -m "version patch commit"
   displayName: 'npm install and build'
 
 
@@ -36,3 +36,4 @@ steps:
     workingDir: './dist/angular-odata'
     publishRegistry: 'useFeed'
     publishFeed: '155346c4-4c3d-4269-a624-e98408645b68/37532069-a755-46e5-9614-9bd2c3da7795'
+
