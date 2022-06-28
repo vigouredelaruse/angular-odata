@@ -19,6 +19,7 @@ steps:
 - script: |
     git config --global user.email "you@there.com"
     git config --global user.name "pipeline wizard"
+    git checkout $(Build.SourceBranchName)
     npm version patch -m "version patch commit"
     cd ./projects/angular-odata
     npm version patch -m "version patch commit"
@@ -28,7 +29,6 @@ steps:
     npm install --save-dev @angular/cli@latest  --force
     npm install --force
     ng build
-    git checkout $(Build.SourceBranchName)
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
     git commit -m "version patch bump commit" 
