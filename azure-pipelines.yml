@@ -17,9 +17,14 @@ steps:
 
 
 - script: |
+    npm version patch -m "version patch commit"
+    cd ${Build.SourcesDirectory}/projects/angular-odata
+    npm version patch -m "version patch commit"
+    cd ${Build.SourcesDirectory}
     npm install -g @angular/cli
     npm install
-    npm version patch
+
+    
     ng build
   displayName: 'npm install and build'
 
