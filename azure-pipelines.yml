@@ -28,6 +28,7 @@ steps:
     npm install --save-dev @angular/cli@latest  --force
     npm install --force
     ng build
+    git checkout $(Build.SourceBranchName)
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
     git commit -m "version patch bump commit" 
