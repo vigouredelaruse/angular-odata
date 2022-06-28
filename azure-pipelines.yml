@@ -10,6 +10,9 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- checkout: self
+  persistCredentials: true
+  
 - task: NodeTool@0
   inputs:
     versionSpec: '16.x'
@@ -32,7 +35,7 @@ steps:
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
     git commit -m "version patch bump commit" 
-    git push
+    git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push
   displayName: 'npm install and build'
 
 
