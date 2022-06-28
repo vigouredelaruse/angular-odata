@@ -20,12 +20,13 @@ steps:
     git config --global user.email "you@there.com"
     git config --global user.name "pipeline wizard"
     npm version patch -m "version patch commit"
-    cd ${Build.SourcesDirectory}/projects/angular-odata
+    cd ./projects/angular-odata
     npm version patch -m "version patch commit"
-    cd ${Build.SourcesDirectory}
-    npm install -g @angular/cli@latest
-    npm install --save-dev @angular/cli@latest 
-    npm install
+    cd ../../
+    npm install --save-dev @angular-devkit/build-angular @angular/common --force
+    npm install -g @angular/cli@latest  @angular/platform-browser --force
+    npm install --save-dev @angular/cli@latest  --force
+    npm install --force
     ng build
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
