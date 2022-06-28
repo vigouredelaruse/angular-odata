@@ -15,16 +15,15 @@ steps:
     versionSpec: '16.x'
   displayName: 'Install Node.js'
 
+
 - script: |
     npm install -g @angular/cli
     npm install
     npm version patch
-    cd projects/angular-odata
-    npm version patch
-    cd ../..
     ng build
   displayName: 'npm install and build'
-  condition: 
+
+
 
 - task: Npm@1
   inputs:
