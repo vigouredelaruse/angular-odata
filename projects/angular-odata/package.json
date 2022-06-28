@@ -25,7 +25,6 @@
   "homepage": "https://github.com/diegomvh/angular-odata",
   "private": false,
   "peerDependencies": {
-    "@angular/animations": "~14.0.3",
     "@angular/common": "~14.0.3",
     "@angular/compiler": "~14.0.3",
     "@angular/core": "~14.0.3",
