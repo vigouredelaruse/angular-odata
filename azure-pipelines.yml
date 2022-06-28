@@ -10,6 +10,9 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- checkout: self
+  persistCredentials: true
+  
 - task: NodeTool@0
   inputs:
     versionSpec: '16.x'
@@ -19,6 +22,7 @@ steps:
 - script: |
     git config --global user.email "you@there.com"
     git config --global user.name "pipeline wizard"
+    git checkout $(Build.SourceBranchName)
     npm version patch -m "version patch commit"
     cd ./projects/angular-odata
     npm version patch -m "version patch commit"
@@ -30,6 +34,8 @@ steps:
     ng build
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
+    git commit -m "version patch bump commit" 
+    git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push
   displayName: 'npm install and build'
 
 
