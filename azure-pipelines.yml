@@ -23,10 +23,10 @@ steps:
     cd ./projects/angular-odata
     npm version patch -m "version patch commit"
     cd ../../
-    npm install --save-dev @angular-devkit/build-angular
-    npm install -g @angular/cli@latest @angular/common @angular/platform-browser
-    npm install --save-dev @angular/cli@latest 
-    npm install
+    npm install --save-dev @angular-devkit/build-angular @angular/common --force
+    npm install -g @angular/cli@latest  @angular/platform-browser --force
+    npm install --save-dev @angular/cli@latest  --force
+    npm install --force
     ng build
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
