@@ -18,6 +18,10 @@ steps:
 - script: |
     npm install -g @angular/cli
     npm install
+    npm version patch
+    pushd projects/angular-path
+    npm version patch
+    popd
     ng build
   displayName: 'npm install and build'
   condition: 
