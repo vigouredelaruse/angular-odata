@@ -24,7 +24,7 @@ steps:
     npm version patch -m "version patch commit"
     cd ../../
     npm install --save-dev @angular-devkit/build-angular
-    npm install -g @angular/cli@latest @angular/common
+    npm install -g @angular/cli@latest @angular/common @angular/platform-browser
     npm install --save-dev @angular/cli@latest 
     npm install
     ng build
