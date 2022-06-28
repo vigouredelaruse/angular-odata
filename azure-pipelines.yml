@@ -23,7 +23,8 @@ steps:
     cd ${Build.SourcesDirectory}/projects/angular-odata
     npm version patch -m "version patch commit"
     cd ${Build.SourcesDirectory}
-    npm install -g @angular/cli@latest
+    npm install --save-dev @angular-devkit/build-angular
+    npm install -g @angular/cli@latest 
     npm install --save-dev @angular/cli@latest 
     npm install
     ng build
