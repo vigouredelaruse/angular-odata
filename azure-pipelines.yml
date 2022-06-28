@@ -30,6 +30,8 @@ steps:
     ng build
     cd ./dist/angular-odata
     npm version patch -m "version patch commit"
+    git commit -m "version patch bump commit" 
+    git push
   displayName: 'npm install and build'
 
 
