@@ -19,7 +19,7 @@ steps:
     npm install -g @angular/cli
     npm install
     npm version patch
-    cd projects/angular-path
+    cd projects/angular-odata
     npm version patch
     cd ../..
     ng build
