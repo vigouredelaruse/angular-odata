@@ -38,7 +38,7 @@ Import ODataModule into your application module definition and setup the module 
 
 ```typescript
 import { NgModule } from '@angular/core';
-import { ODataModule } from 'angular-odata';
+import { ODataModule } from '@vigouredelaruse/angular-odata';
 
 @NgModule({
   imports: [
@@ -62,7 +62,7 @@ Setup ODataModule with \<Api\>Config and import it along with \<Api\>Module.
 ```typescript
 import { NgModule } from '@angular/core';
 
-import { ODataModule } from 'angular-odata';
+import { ODataModule } from '@vigouredelaruse/angular-odata';
 import { TripPinConfig, TripPinModule } from './trippin';
 
 @NgModule({
