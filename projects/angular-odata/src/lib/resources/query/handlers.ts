@@ -91,8 +91,11 @@ export class ODataQueryOptionHandler<T> {
       this.n,
       this.assertArray().filter((v) => v !== value)
     );
-    // If only one... down to value
-    if (this.o.get(this.n).length === 1)
+    // If only one and not is array... down to value
+    if (
+      this.o.get(this.n).length === 1 &&
+      !Types.isArray(this.o.get(this.n)[0])
+    )
       this.o.set(this.n, this.o.get(this.n)[0]);
   }
 
@@ -103,6 +106,18 @@ export class ODataQueryOptionHandler<T> {
    */
   at(index: number) {
     return this.assertArray()[index];
+  }
+
+  some(predicate: (value: any) => boolean) {
+    return this.assertArray().some(predicate);
+  }
+
+  every(predicate: (value: any) => boolean) {
+    return this.assertArray().every(predicate);
+  }
+
+  find(predicate: (value: any) => boolean) {
+    return this.assertArray().find(predicate);
   }
   //#endregion
 
