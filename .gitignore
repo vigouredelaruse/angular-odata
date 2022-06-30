@@ -40,3 +40,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/angular-odata/FileContentIndex/5bb8c7e9-38e5-4eda-8dce-0a9393f8ee89.vsidx
+.vs/angular-odata/v17/.suo
+.vs/angular-odata/v17/TestStore/0/000.testlog
+.vs/angular-odata/v17/TestStore/0/testlog.manifest
+.vs/angular-odata/FileContentIndex/read.lock
