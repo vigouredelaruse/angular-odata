@@ -39,6 +39,7 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'publish'
+    command: 'custom'
     workingDir: './dist/angular-odata'
-    publishEndpoint: 'vigouredelaruse'
+    customCommand: 'npm publish --access-public'
+    customEndpoint: 'vigouredelaruse'
