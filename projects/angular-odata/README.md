@@ -2,8 +2,8 @@
 
 [![build](https://github.com/diegomvh/angular-odata/workflows/Node.js%20CI/badge.svg)](https://github.com/diegomvh/angular-odata/actions?query=workflow%3A%22Node.js+CI%22)
 [![npm version](https://badge.fury.io/js/angular-odata.svg)](http://badge.fury.io/js/angular-odata)
-
-A fluent API for querying, creating, updating and deleting OData resources in Angular.
+[![Build Status](https://dev.azure.com/electricrucible/the%20horseless%20newspaper/_apis/build/status/vigouredelaruse.angular-odata?branchName=main)](https://dev.azure.com/electricrucible/the%20horseless%20newspaper/_build/latest?definitionId=51&branchName=main)
+A (fork of a) fluent API for querying, creating, updating and deleting OData resources in Angular.
 OData service for Angular.
 
 Please check also my other related project, [OData Angular Generator](https://github.com/diegomvh/ODataApiGen)

@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/vigouredelaruse/angular-odata.git"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "keywords": [
     "client",
     "odata",
