@@ -5,7 +5,7 @@
   "description": "Client side OData typescript library for Angular",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/diegomvh/angular-odata.git"
+    "url": "git+https://github.com/vigouredelaruse/angular-odata.git"
   },
   "keywords": [
     "client",
