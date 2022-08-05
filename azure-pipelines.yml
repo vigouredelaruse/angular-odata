@@ -37,12 +37,8 @@ steps:
     git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push
   displayName: 'npm install and build'
 
-
-
 - task: Npm@1
   inputs:
     command: 'publish'
     workingDir: './dist/angular-odata'
-    publishRegistry: 'useFeed'
-    publishFeed: '155346c4-4c3d-4269-a624-e98408645b68/37532069-a755-46e5-9614-9bd2c3da7795'
-
+    publishEndpoint: 'vigouredelaruse'
