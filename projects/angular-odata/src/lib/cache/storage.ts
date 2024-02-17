@@ -35,7 +35,7 @@ export class ODataInStorageCache extends ODataCache {
   store() {
     this.storage.setItem(
       this.name,
-      JSON.stringify(Array.from(this.entries.entries()))
+      JSON.stringify(Array.from(this.entries.entries())),
     );
   }
 
@@ -44,7 +44,7 @@ export class ODataInStorageCache extends ODataCache {
    */
   restore() {
     this.entries = new Map<string, ODataCacheEntry<any>>(
-      JSON.parse(this.storage.getItem(this.name) || '[]')
+      JSON.parse(this.storage.getItem(this.name) || '[]'),
     );
   }
 
@@ -64,7 +64,7 @@ export class ODataInStorageCache extends ODataCache {
   putResponse(req: ODataRequest<any>, res: ODataResponse<any>) {
     const scope = this.scope(req);
     const tags = this.tags(res);
-    this.put<ResponseJson>(req.cacheKey, res.toJSON(), {
+    this.put<ResponseJson>(req.cacheKey, res.toJson(), {
       timeout: res.options.maxAge,
       scope,
       tags,
@@ -80,6 +80,6 @@ export class ODataInStorageCache extends ODataCache {
     const scope = this.scope(req);
     const data = this.get<ResponseJson>(req.cacheKey, { scope });
 
-    return data !== undefined ? ODataResponse.fromJSON(req, data) : undefined;
+    return data !== undefined ? ODataResponse.fromJson(req, data) : undefined;
   }
 }

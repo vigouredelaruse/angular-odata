@@ -12,6 +12,64 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
 
         <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
@@ -77,7 +135,7 @@
                 <h3>Extends</h3>
             </p>
             <p class="comment">
-                        <code><a href="../classes/CsdlStructuralProperty.html" target="_self" >CsdlStructuralProperty</a></code>
+                            <code><a href="../classes/CsdlStructuralProperty.html" target="_self" >CsdlStructuralProperty</a></code>
             </p>
 
 
@@ -587,7 +645,7 @@
   constructor(
     public name: string,
     public type: string,
-    public nullable?: boolean
+    public nullable?: boolean,
   ) {}
 }
 
@@ -601,7 +659,7 @@ export class CsdlProperty extends CsdlStructuralProperty {
     public scale?: number,
     public unicode?: boolean,
     public srid?: string,
-    public defaultValue?: string
+    public defaultValue?: string,
   ) {
     super(name, type, nullable);
   }
@@ -615,14 +673,17 @@ export class CsdlNavigationProperty extends CsdlStructuralProperty {
     public partner?: string,
     public containsTarget?: boolean,
     public referentialConstraints?: CsdlReferentialConstraint[],
-    public onDelete?: CsdlOnDelete
+    public onDelete?: CsdlOnDelete,
   ) {
     super(name, type, nullable);
   }
 }
 
 export class CsdlReferentialConstraint {
-  constructor(public property: string, public referencedProperty: string) {}
+  constructor(
+    public property: string,
+    public referencedProperty: string,
+  ) {}
 }
 
 export class CsdlOnDelete {

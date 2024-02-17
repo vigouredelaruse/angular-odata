@@ -82,12 +82,10 @@ export class ODataEntityResource<T> extends ODataResource<T> {
 
   cast<C>(type: string) {
     const baseSchema = this.schema as ODataStructuredType<T>;
-    const castSchema = this.api.findStructuredTypeForType<C>(type);
-    if (
-      castSchema !== undefined &&
-      baseSchema !== undefined &&
-      !castSchema.isSubtypeOf(baseSchema)
-    )
+    // Downcast
+    const castSchema = baseSchema?.findChildSchema((s) => s.isTypeOf(type));
+    // Upcast ?
+    if (castSchema !== undefined)
       throw new Error(`cast: Cannot cast to ${type}`);
     const segments = this.cloneSegments();
     segments.add(PathSegment.type, type).type(type);

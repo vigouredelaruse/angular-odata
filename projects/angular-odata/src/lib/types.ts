@@ -29,6 +29,7 @@ export enum QueryOption {
   select = 'select',
   expand = 'expand',
   compute = 'compute',
+  apply = 'apply',
   filter = 'filter',
   search = 'search',
   transform = 'transform',
@@ -141,6 +142,7 @@ export interface ApiOptions {
   //https://github.com/OData/AspNetCoreOData/issues/171
   nonParenthesisForEmptyParameterFunction?: boolean;
   jsonBatchFormat?: boolean;
+  relativeUrls?: boolean;
 }
 
 export interface ParserOptions {

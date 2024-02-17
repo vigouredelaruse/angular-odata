@@ -70,7 +70,7 @@ export class ODataNavigationPropertyResource<T> extends ODataResource<T> {
           : undefined;
       baseSchema =
         field !== undefined
-          ? baseSchema.findSchemaForField<N>(field)
+          ? baseSchema.findParentSchemaForField<N>(field)
           : undefined;
     }
 
@@ -144,6 +144,7 @@ export class ODataNavigationPropertyResource<T> extends ODataResource<T> {
 
   count() {
     return ODataCountResource.factory<T>(this.api, {
+      schema: this.schema as ODataStructuredType<T>,
       segments: this.cloneSegments(),
       query: this.cloneQuery<T>(),
     });

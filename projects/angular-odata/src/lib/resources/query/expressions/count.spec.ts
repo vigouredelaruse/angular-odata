@@ -33,7 +33,7 @@ describe('OData orderBy builder', () => {
   describe('base condition', () => {
     describe('as factory function', () => {
       it('count', () => {
-        const compare1 = CountExpression.count<Person>(({ e, t }) =>
+        const compare1 = CountExpression.factory<Person>(({ e, t }) =>
           e().field(t.Pets)
         );
 
@@ -41,7 +41,7 @@ describe('OData orderBy builder', () => {
       });
 
       it('count filter', () => {
-        const compare1 = CountExpression.count<Person>(({ e, t }) =>
+        const compare1 = CountExpression.factory<Person>(({ e, t }) =>
           e().field(t.Pets, ({ f }) => f.filter(({ e, t }) => e().gt(t.Age, 3)))
         );
 

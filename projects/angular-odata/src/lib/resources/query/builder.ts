@@ -28,7 +28,7 @@ export enum StandardAggregateMethods {
   average = 'average',
   countdistinct = 'countdistinct',
 }
-export type Aggregate =
+export type AggregateType =
   | string
   | { [propertyName: string]: { with: StandardAggregateMethods; as: string } };
 
@@ -63,11 +63,11 @@ export type ExpandOptions<T> = {
 };
 
 export type Transform<T> = {
-  aggregate?: Aggregate | Array<Aggregate>;
+  aggregate?: AggregateType | Array<AggregateType>;
   filter?: Filter<T>;
-  groupBy?: GroupBy<T>;
+  groupBy?: GroupByType<T>;
 };
-export type GroupBy<T> = {
+export type GroupByType<T> = {
   properties: Array<keyof T>;
   transform?: Transform<T>;
 };
@@ -109,10 +109,13 @@ export const isQueryCustomType = (value: any) =>
   'type' in value &&
   value.type in QueryCustomTypes;
 
-export const isRawType = (value: any) => isQueryCustomType(value) && (value as QueryCustomType).type === QueryCustomTypes.Raw;
+export const isRawType = (value: any) =>
+  isQueryCustomType(value) &&
+  (value as QueryCustomType).type === QueryCustomTypes.Raw;
 
 export type QueryOptions<T> = ExpandOptions<T> & {
   search: string;
+  apply: string;
   transform: { [name: string]: any } | { [name: string]: any }[];
   skip: number;
   skiptoken: string;
@@ -175,6 +178,7 @@ export function buildPathAndQuery<T>({
   top,
   skip,
   filter,
+  apply,
   transform,
   orderBy,
   key,
@@ -197,7 +201,11 @@ export function buildPathAndQuery<T>({
 
   // Select
   if (select) {
-    query.$select = isRawType(select) ? (select as unknown as QueryCustomType).value : Array.isArray(select) ? select.join(',') : select;
+    query.$select = isRawType(select)
+      ? (select as unknown as QueryCustomType).value
+      : Array.isArray(select)
+      ? select.join(',')
+      : select;
   }
 
   // Search
@@ -228,6 +236,13 @@ export function buildPathAndQuery<T>({
     query.$apply = buildTransforms(transform, { aliases, escape });
   }
 
+  // Apply
+  if (apply) {
+    query.$apply = query.$apply
+      ? query.$apply + '/' + buildApply(apply, { aliases, escape })
+      : buildApply(apply, { aliases, escape });
+  }
+
   // Expand
   if (expand) {
     query.$expand = buildExpand(expand, { aliases, escape });
@@ -250,16 +265,14 @@ export function buildPathAndQuery<T>({
   // Top
   if (isRawType(top)) {
     query.$top = (top as unknown as QueryCustomType).value;
-  }
-  else if (typeof top === 'number') {
+  } else if (typeof top === 'number') {
     query.$top = top;
   }
 
   // Skip
   if (isRawType(skip)) {
     query.$top = (skip as unknown as QueryCustomType).value;
-  }
-  else if (typeof skip === 'number') {
+  } else if (typeof skip === 'number') {
     query.$skip = skip;
   }
 
@@ -799,7 +812,7 @@ function buildTransforms<T>(
   return transformsResult.join('/') || undefined;
 }
 
-function buildAggregate(aggregate: Aggregate | Aggregate[]) {
+function buildAggregate(aggregate: AggregateType | AggregateType[]) {
   // Wrap single object in an array for simplified processing
   const aggregateArray = Array.isArray(aggregate) ? aggregate : [aggregate];
 
@@ -825,7 +838,7 @@ function buildAggregate(aggregate: Aggregate | Aggregate[]) {
 }
 
 function buildGroupBy<T>(
-  groupBy: GroupBy<T>,
+  groupBy: GroupByType<T>,
   { aliases, escape = false }: { aliases?: QueryCustomType[]; escape?: boolean }
 ) {
   if (!groupBy.properties) {
@@ -843,7 +856,7 @@ function buildGroupBy<T>(
 
 function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
   if (isRawType(orderBy)) {
-    return (orderBy as QueryCustomType).value
+    return (orderBy as QueryCustomType).value;
   } else if (Array.isArray(orderBy)) {
     return (orderBy as OrderByObject<T>[])
       .map((value) =>
@@ -862,6 +875,16 @@ function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
       .join(',');
   }
   return `${prefix}${orderBy as string}`;
+}
+
+function buildApply(
+  apply: any,
+  { aliases, escape = false }: { aliases?: QueryCustomType[]; escape?: boolean }
+) {
+  const applyArray = Array.isArray(apply) ? apply : [apply];
+  return applyArray
+    .map((v) => normalizeValue(v, { aliases, escape }))
+    .join('/');
 }
 
 function buildUrl(path: string, params: { [name: string]: any }): string {

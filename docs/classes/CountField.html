@@ -12,6 +12,64 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
 
         <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
@@ -109,7 +167,10 @@
                                 <a href="#render" >render</a>
                             </li>
                             <li>
-                                <a href="#toJSON" >toJSON</a>
+                                <a href="#resolve" >resolve</a>
+                            </li>
+                            <li>
+                                <a href="#toJson" >toJson</a>
                             </li>
                         </ul>
                     </td>
@@ -222,21 +283,21 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="66"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:66</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="82"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:82</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>CountField&lt;T&gt;</code>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>CountField&lt;T&gt;</code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -259,53 +320,51 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="54"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:54</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="70"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:70</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>opts</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>opts</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -316,7 +375,7 @@
                 <td class="col-md-4">
                     <a name="option"></a>
                     <span class="name">
-                        <span class="modifier">Private</span>
+                            <span class="modifier">Private</span>
                         <span ><b>option</b></span>
                         <a href="#option"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -324,79 +383,77 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>option(name: <a href="../undefineds/QueryOption.html" target="_self">QueryOption</a>, opts?: O)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="76"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:76</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="96"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:96</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>O</li>
+                            </ul>
+                        </td>
+                    </tr>
 
             <tr>
                 <td class="col-md-4">
-                    <b>Type parameters :</b>
-                    <ul class="type-parameters">
-                        <li>O</li>
-                    </ul>
-                </td>
-            </tr>
 
-            <tr>
-                <td class="col-md-4">
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>name</td>
+                                            <td>
+                                                            <code><a href="../miscellaneous/enumerations.html#QueryOption" target="_self" >QueryOption</a></code>
+                                            </td>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>name</td>
-                                    <td>
-                                                <code><a href="../miscellaneous/enumerations.html#QueryOption" target="_self" >QueryOption</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                                <tr>
-                                    <td>opts</td>
-                                    <td>
-                                            <code>O</code>
-                                    </td>
+                                        </tr>
+                                        <tr>
+                                                <td>opts</td>
+                                            <td>
+                                                        <code>O</code>
+                                            </td>
 
-                                    <td>
-                                        Yes
-                                    </td>
+                                            <td>
+                                                    Yes
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -419,52 +476,50 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="24"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:24</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="24"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:24</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -473,35 +528,102 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="toJSON"></a>
+                    <a name="resolve"></a>
                     <span class="name">
-                        <span ><b>toJSON</b></span>
-                        <a href="#toJSON"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>resolve</b></span>
+                        <a href="#resolve"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>toJSON()</code>
+<code>resolve(parser: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="91"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:91</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="18"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:18</a></div>
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>parser</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="toJson"></a>
+                    <span class="name">
+                        <span ><b>toJson</b></span>
+                        <a href="#toJson"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>toJson()</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="18"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/count.ts:18</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>{ field: any; }</code>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>{ field: any; }</code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -543,14 +665,14 @@
 
 
     <div class="tab-pane fade  tab-source-code" id="source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { QueryOption } from &#x27;../../../types&#x27;;
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Parser, ParserOptions, QueryOption } from &#x27;../../../types&#x27;;
 import { Objects, Types } from &#x27;../../../utils&#x27;;
 import type { QueryCustomType } from &#x27;../builder&#x27;;
 import { Expression } from &#x27;./base&#x27;;
 import { FilterExpression, FilterExpressionBuilder } from &#x27;./filter&#x27;;
-import { render, Field, Renderable } from &#x27;./syntax&#x27;;
+import { render, FieldFactory, Renderable, RenderableFactory } from &#x27;./syntax&#x27;;
 
-export class CountField&lt;T extends object&gt; implements Renderable {
+export class CountField&lt;T&gt; implements Renderable {
   constructor(
     protected field: any,
     private values: { [name: string]: any } &#x3D; {}
@@ -560,9 +682,9 @@ export class CountField&lt;T extends object&gt; implements Renderable {
     return &#x27;CountField&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
-      field: this.field.toJSON(),
+      field: this.field.toJson(),
     };
   }
 
@@ -570,12 +692,16 @@ export class CountField&lt;T extends object&gt; implements Renderable {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    const params: { [key: string]: string } &#x3D; [
+    const params: { [name: string]: string } &#x3D; [
       QueryOption.filter,
       QueryOption.search,
     ]
@@ -583,11 +709,23 @@ export class CountField&lt;T extends object&gt; implements Renderable {
       .reduce((acc, key) &#x3D;&gt; {
         let value: any &#x3D; this.values[key];
         if (Types.rawType(value).endsWith(&#x27;Expression&#x27;)) {
-          value &#x3D; (value as Expression&lt;T&gt;).render({ aliases, prefix, escape });
+          value &#x3D; (value as Expression&lt;T&gt;).render({
+            aliases,
+            prefix,
+            escape,
+            parser,
+            options,
+          });
         }
         return Object.assign(acc, { [key]: value });
       }, {});
-    let count &#x3D; &#x60;${render(this.field, { aliases, escape, prefix })}/$count&#x60;;
+    let count &#x3D; &#x60;${render(this.field, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })}/$count&#x60;;
     if (!Types.isEmpty(params)) {
       count &#x3D; &#x60;${count}(${Object.keys(params)
         .map((key) &#x3D;&gt; &#x60;$${key}&#x3D;${params[key]}&#x60;)
@@ -617,6 +755,10 @@ export class CountField&lt;T extends object&gt; implements Renderable {
     return new CountField&lt;T&gt;(this.field.clone(), values);
   }
 
+  resolve(parser: any) {
+    return parser;
+  }
+
   // Option Handler
   private option&lt;O&gt;(name: QueryOption, opts?: O) {
     if (opts !&#x3D;&#x3D; undefined) this.values[name] &#x3D; opts;
@@ -637,7 +779,11 @@ export class CountExpression&lt;T&gt; extends Expression&lt;T&gt; {
     super({ children });
   }
 
-  static count&lt;T extends object&gt;(
+  get [Symbol.toStringTag]() {
+    return &#x27;CountExpression&#x27;;
+  }
+
+  static count&lt;T&gt;(
     opts: (
       builder: CountExpressionBuilder&lt;T&gt;,
       current?: CountExpression&lt;T&gt;
@@ -646,29 +792,43 @@ export class CountExpression&lt;T&gt; extends Expression&lt;T&gt; {
   ): CountExpression&lt;T&gt; {
     return opts(
       {
-        t: Field.factory&lt;Readonly&lt;Required&lt;T&gt;&gt;&gt;(),
+        t: FieldFactory&lt;Readonly&lt;Required&lt;T&gt;&gt;&gt;(),
         e: () &#x3D;&gt; new CountExpression&lt;T&gt;(),
       },
       current
     ) as CountExpression&lt;T&gt;;
   }
 
-  private _add(node: Renderable): CountExpression&lt;T&gt; {
+  private _add(node: Renderable): CountExpression&lt;any&gt; {
     this._children.push(node);
     return this;
   }
 
+  override toJson() {
+    const json &#x3D; super.toJson();
+    return Object.assign(json, {});
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): CountExpression&lt;T&gt; {
+    return new CountExpression&lt;T&gt;({
+      children: json[&#x27;children&#x27;].map((c: any) &#x3D;&gt; RenderableFactory(c)),
+    });
+  }
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   } &#x3D; {}): string {
     let content &#x3D; this._children
-      .map((n) &#x3D;&gt; n.render({ aliases, escape, prefix }))
+      .map((n) &#x3D;&gt; n.render({ aliases, escape, prefix, parser, options }))
       .join(&#x60;,&#x60;);
     return content;
   }
@@ -679,14 +839,14 @@ export class CountExpression&lt;T&gt; extends Expression&lt;T&gt; {
     });
   }
 
-  field&lt;F extends Object&gt;(
+  field&lt;F&gt;(
     field: F[],
     opts?: (e: { t: F; f: CountField&lt;F&gt; }) &#x3D;&gt; CountExpression&lt;F&gt;
   ): CountExpression&lt;F&gt; {
     let countField &#x3D; new CountField&lt;F&gt;(field);
     if (opts !&#x3D;&#x3D; undefined)
       opts({
-        t: Field.factory&lt;Readonly&lt;Required&lt;F&gt;&gt;&gt;(),
+        t: FieldFactory&lt;Readonly&lt;Required&lt;F&gt;&gt;&gt;(),
         f: countField,
       });
     return this._add(countField);

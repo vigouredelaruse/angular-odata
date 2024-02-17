@@ -1,7 +1,8 @@
+import { Parser, ParserOptions } from '../../../types';
 import { Types } from '../../../utils';
 import type { QueryCustomType } from '../builder';
 import { Expression } from './base';
-import { render, Grouping, Renderable } from './syntax';
+import { render, syntax, Renderable, RenderableFactory } from './syntax';
 
 export type SearchConnector = 'AND' | 'OR';
 
@@ -12,7 +13,7 @@ export class SearchTerm implements Renderable {
     return 'SearchTerm';
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       value: this.value,
@@ -23,16 +24,29 @@ export class SearchTerm implements Renderable {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<any>;
+    options?: ParserOptions;
   }): string {
-    return `${render(this.value, { aliases, escape, prefix })}`;
+    return `${render(this.value, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })}`;
   }
 
   clone() {
     return new SearchTerm(this.value);
+  }
+  resolve(parser: any) {
+    return parser;
   }
 }
 
@@ -56,7 +70,11 @@ export class SearchExpression<T> extends Expression<T> {
     this._negated = negated || false;
   }
 
-  static search<T extends object>(
+  get [Symbol.toStringTag]() {
+    return 'SearchExpression';
+  }
+
+  static factory<T>(
     opts: (
       builder: SearchExpressionBuilder<T>,
       current?: SearchExpression<T>
@@ -88,7 +106,7 @@ export class SearchExpression<T> extends Expression<T> {
             negated: this._negated,
           });
           if (exp.length() > 1) {
-            children.push(new Grouping(exp));
+            children.push(syntax.group(exp));
           } else {
             children.push(exp);
           }
@@ -100,7 +118,7 @@ export class SearchExpression<T> extends Expression<T> {
       ) {
         children = [...children, ...node.children()];
       } else {
-        children.push(new Grouping(node));
+        children.push(syntax.group(node));
       }
       this._connector = connector;
       this._children = children;
@@ -113,7 +131,7 @@ export class SearchExpression<T> extends Expression<T> {
     } else {
       this._children.push(
         node instanceof SearchExpression && !node.negated()
-          ? new Grouping(node)
+          ? syntax.group(node)
           : node
       );
     }
@@ -124,13 +142,17 @@ export class SearchExpression<T> extends Expression<T> {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   } = {}): string {
     let content = this._children
-      .map((n) => n.render({ aliases, escape, prefix }))
+      .map((n) => n.render({ aliases, escape, prefix, parser, options }))
       .join(` ${this._connector} `);
     return content;
   }
@@ -143,14 +165,21 @@ export class SearchExpression<T> extends Expression<T> {
     });
   }
 
-  override toJSON() {
-    return {
-      children: this._children.map((c) => c.toJSON()),
+  override toJson() {
+    const json = super.toJson();
+    return Object.assign(json, {
       connector: this._connector,
       negated: this._negated,
-    };
+    });
   }
 
+  static fromJson<T>(json: { [name: string]: any }): SearchExpression<T> {
+    return new SearchExpression<T>({
+      children: json['children'].map((c: any) => RenderableFactory(c)),
+      connector: json['connector'],
+      negated: json['negated'],
+    });
+  }
   connector() {
     return this._connector;
   }

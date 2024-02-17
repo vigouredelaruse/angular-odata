@@ -32,7 +32,7 @@ describe('OData compute builder', () => {
 
   describe('base condition', () => {
     it('field', () => {
-      const compare1 = ComputeExpression.compute<Person>(({ e, t }) =>
+      const compare1 = ComputeExpression.factory<Person>(({ e, t }) =>
         e().field('Class', ({ f }) => f.year(t.BornOn))
       );
 

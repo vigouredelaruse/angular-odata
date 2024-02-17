@@ -155,12 +155,24 @@ export class ODataStructuredType<T> extends ODataSchemaElement {
     return this.parent.findParentSchema(predicate);
   }
 
+  findChildSchema(
+    predicate: (p: ODataStructuredType<any>) => boolean
+  ): ODataStructuredType<any> | undefined {
+    if (predicate(this)) return this;
+    let match: ODataStructuredType<any> | undefined;
+    for (let ch of this.children) {
+      match = ch.findChildSchema(predicate);
+      if (match !== undefined) break;
+    }
+    return match;
+  }
+
   /**
    * Find a parent schema of the structured type for the given field.
    * @param field Field that belongs to the structured type
    * @returns The schema of the field
    */
-  findSchemaForField<E>(field: ODataStructuredTypeFieldParser<any>) {
+  findParentSchemaForField<E>(field: ODataStructuredTypeFieldParser<any>) {
     return this.findParentSchema(
       (p) =>
         p

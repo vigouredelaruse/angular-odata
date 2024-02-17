@@ -1,9 +1,10 @@
+import { Parser, ParserOptions } from '../../../types';
 import type { QueryCustomType } from '../builder';
 import { Expression } from './base';
-import { Field, Renderable } from './syntax';
+import { FieldFactory, Renderable, RenderableFactory } from './syntax';
 
 export type SelectExpressionBuilder<T> = {
-  t: Readonly<Required<T>>;
+  t: Required<T>;
   e: () => SelectExpression<T>;
 };
 export class SelectExpression<T> extends Expression<T> {
@@ -15,7 +16,11 @@ export class SelectExpression<T> extends Expression<T> {
     super({ children });
   }
 
-  static select<T extends object>(
+  get [Symbol.toStringTag]() {
+    return 'SelectExpression';
+  }
+
+  static factory<T>(
     opts: (
       builder: SelectExpressionBuilder<T>,
       current?: SelectExpression<T>
@@ -24,24 +29,38 @@ export class SelectExpression<T> extends Expression<T> {
   ): SelectExpression<T> {
     return opts(
       {
-        t: Field.factory<Readonly<Required<T>>>(),
+        t: FieldFactory<Required<T>>(),
         e: () => new SelectExpression<T>(),
       },
       current
     ) as SelectExpression<T>;
   }
 
+  override toJson() {
+    const json = super.toJson();
+    return Object.assign(json, {});
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): SelectExpression<T> {
+    return new SelectExpression<T>({
+      children: json['children'].map((c: any) => RenderableFactory(c)),
+    });
+  }
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   } = {}): string {
     return this._children
-      .map((n) => n.render({ aliases, escape, prefix }))
+      .map((n) => n.render({ aliases, escape, prefix, parser, options }))
       .join(',');
   }
 

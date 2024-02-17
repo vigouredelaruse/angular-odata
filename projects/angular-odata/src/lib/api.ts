@@ -104,11 +104,11 @@ export class ODataApi {
     });
   }
 
-  fromJSON<P, R>(json: {
+  fromJson<P, R>(json: {
     segments: ODataSegment[];
     options: { [name: string]: any };
   }): ODataActionResource<P, R> | ODataFunctionResource<P, R>;
-  fromJSON<E>(json: {
+  fromJson<E>(json: {
     segments: ODataSegment[];
     options: { [name: string]: any };
   }):
@@ -116,12 +116,12 @@ export class ODataApi {
     | ODataEntitySetResource<E>
     | ODataNavigationPropertyResource<E>
     | ODataSingletonResource<E>;
-  fromJSON(json: {
+  fromJson(json: {
     segments: ODataSegment[];
     options: { [name: string]: any };
   }) {
-    const segments = new ODataPathSegments(json.segments);
-    const query = new ODataQueryOptions(json.options);
+    const segments = ODataPathSegments.fromJson(json.segments);
+    const query = ODataQueryOptions.fromJson<any>(json.options);
     switch (segments.last()?.name as PathSegment) {
       case PathSegment.entitySet:
         if (segments.last()?.hasKey()) {
@@ -240,6 +240,7 @@ export class ODataApi {
       bodyQueryOptions: options.bodyQueryOptions,
       reportProgress: options.reportProgress,
       fetchPolicy: options.fetchPolicy,
+      parserOptions: options.parserOptions,
       withCredentials: options.withCredentials,
     });
 

@@ -33,7 +33,7 @@ describe('OData orderBy builder', () => {
   describe('base condition', () => {
     describe('as factory function', () => {
       it('asc', () => {
-        const compare1 = OrderByExpression.orderBy<Person>(({ e, t }) =>
+        const compare1 = OrderByExpression.factory<Person>(({ e, t }) =>
           e().ascending(t.Age)
         );
 
@@ -41,7 +41,7 @@ describe('OData orderBy builder', () => {
       });
 
       it('desc', () => {
-        const compare1 = OrderByExpression.orderBy<Person>(({ e, t }) =>
+        const compare1 = OrderByExpression.factory<Person>(({ e, t }) =>
           e().descending(t.Age)
         );
 
@@ -51,7 +51,7 @@ describe('OData orderBy builder', () => {
 
     describe('combination e().ascending(...).descending(...)', () => {
       it('asc,desc', () => {
-        const compare = OrderByExpression.orderBy<Person>(({ e, t }) =>
+        const compare = OrderByExpression.factory<Person>(({ e, t }) =>
           e().ascending(t.Age).descending(t.CreatedOn)
         );
 
@@ -61,14 +61,14 @@ describe('OData orderBy builder', () => {
 
     describe('navigate main', () => {
       it('navigate', () => {
-        const compare1 = OrderByExpression.orderBy<Person>(({ e, t }) =>
+        const compare1 = OrderByExpression.factory<Person>(({ e, t }) =>
           e().ascending(t.Car!.Year)
         );
         expect(compare1.render()).toBe('Car/Year asc');
       });
 
       it('combination navigate', () => {
-        const compare1 = OrderByExpression.orderBy<Person>(({ e, t }) =>
+        const compare1 = OrderByExpression.factory<Person>(({ e, t }) =>
           e().ascending(t.Car!.Year).descending(t.Car!.Model!.Name)
         );
         expect(compare1.render()).toBe('Car/Year asc,Car/Model/Name desc');

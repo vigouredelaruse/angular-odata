@@ -20,6 +20,7 @@ import {
   ODataPropertyOptions,
 } from './options';
 import { ODataValueResource } from './value';
+import { ODataCountResource } from './count';
 
 export class ODataPropertyResource<T> extends ODataResource<T> {
   //#region Factory
@@ -65,7 +66,7 @@ export class ODataPropertyResource<T> extends ODataResource<T> {
           : undefined;
       baseSchema =
         field !== undefined
-          ? baseSchema.findSchemaForField<N>(field)
+          ? baseSchema.findParentSchemaForField<N>(field)
           : undefined;
     }
 
@@ -121,6 +122,14 @@ export class ODataPropertyResource<T> extends ODataResource<T> {
     });
   }
 
+  count() {
+    return ODataCountResource.factory<T>(this.api, {
+      schema: this.schema as ODataStructuredType<T>,
+      segments: this.cloneSegments(),
+      query: this.cloneQuery<T>(),
+    });
+  }
+
   /*
   navigationProperty<N>(path: string) {
     let schema: ODataStructuredType<N> | undefined;
@@ -148,7 +157,7 @@ export class ODataPropertyResource<T> extends ODataResource<T> {
       type = field?.type;
       schema =
         field !== undefined
-          ? this.schema.findSchemaForField<P>(field)
+          ? this.schema.findParentSchemaForField<P>(field)
           : undefined;
     }
     return ODataPropertyResource.factory<P>(this.api, {

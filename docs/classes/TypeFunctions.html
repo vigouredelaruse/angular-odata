@@ -12,6 +12,64 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
 
         <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
@@ -127,90 +185,76 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>cast(left: T | string, right?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>cast(left: T | string, type?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="426"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:426</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>N</li>
+                            </ul>
+                        </td>
+                    </tr>
+
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="267"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:267</a></div>
-                </td>
-            </tr>
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>left</td>
+                                            <td>
+                                                        <code>T | string</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
 
 
-            <tr>
-                <td class="col-md-4">
+                                        </tr>
+                                        <tr>
+                                                <td>type</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Default value</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>left</td>
-                                    <td>
-                                            <code>T | string</code>
-                                    </td>
+                                            <td>
+                                                    Yes
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
 
-                                    <td>
-                                    </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>N</code>
 
-                                </tr>
-                                <tr>
-                                    <td>right</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
-
-                                    <td>
-                                        Yes
-                                    </td>
-
-                                    <td>
-                                    </td>
-
-                                </tr>
-                                <tr>
-                                    <td>normalize</td>
-                                    <td>
-                                                <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
-
-                                    <td>
-                                        <code>&#x27;right&#x27;</code>
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/Function.html" target="_self" >Function&lt;T&gt;</a></code>
-
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -228,90 +272,68 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>isof(left: T | string, right?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>isof(left: T | string, type?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="271"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:271</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="434"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:434</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Default value</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>left</td>
-                                    <td>
-                                            <code>T | string</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>left</td>
+                                            <td>
+                                                        <code>T | string</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
-                                    <td>
-                                    </td>
 
-                                </tr>
-                                <tr>
-                                    <td>right</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
+                                        </tr>
+                                        <tr>
+                                                <td>type</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                                    <td>
-                                        Yes
-                                    </td>
+                                            <td>
+                                                    Yes
+                                            </td>
 
-                                    <td>
-                                    </td>
 
-                                </tr>
-                                <tr>
-                                    <td>normalize</td>
-                                    <td>
-                                                <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                    </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/Type.html" target="_self" >Type&lt;T&gt;</a></code>
 
-                                    <td>
-                                        No
-                                    </td>
-
-                                    <td>
-                                        <code>&#x27;right&#x27;</code>
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/Function.html" target="_self" >Function&lt;T&gt;</a></code>
-
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -326,9 +348,18 @@
 
 
     <div class="tab-pane fade  tab-source-code" id="source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Objects, Types } from &#x27;../../../utils&#x27;;
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { ODataStructuredTypeFieldParser } from &#x27;../../../schema&#x27;;
+import { Parser, ParserOptions } from &#x27;../../../types&#x27;;
+import { Objects, Types } from &#x27;../../../utils&#x27;;
 import type { QueryCustomType } from &#x27;../builder&#x27;;
 import { normalizeValue } from &#x27;../builder&#x27;;
+import { ComputeExpression } from &#x27;./compute&#x27;;
+import { CountExpression } from &#x27;./count&#x27;;
+import { ExpandExpression } from &#x27;./expand&#x27;;
+import { FilterExpression } from &#x27;./filter&#x27;;
+import { OrderByExpression } from &#x27;./orderby&#x27;;
+import { SearchExpression } from &#x27;./search&#x27;;
+import { SelectExpression } from &#x27;./select&#x27;;
 
 export type Normalize &#x3D; &#x27;all&#x27; | &#x27;right&#x27; | &#x27;left&#x27; | &#x27;none&#x27;;
 
@@ -337,47 +368,115 @@ export interface Renderable {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;any&gt;;
+    options?: ParserOptions;
   }): string;
   toString(): string;
-  toJSON(): any;
+  toJson(): any;
   clone(): any;
+  resolve(parser: any): any;
 }
 
-export class Field&lt;T extends object&gt; implements ProxyHandler&lt;T&gt; {
-  constructor(public name: string &#x3D; &#x27;&#x27;) { }
+export const FieldFactory &#x3D; &lt;T extends object&gt;(
+  names: (string | Renderable)[] &#x3D; []
+): any &#x3D;&gt;
+  new Proxy({ _names: names } as T, {
+    get(target: T, key: string | symbol) {
+      let names &#x3D; (target as any)[&#x27;_names&#x27;] as (string | Renderable)[];
+      if (key &#x3D;&#x3D;&#x3D; &#x27;render&#x27;) {
+        return ({
+          aliases,
+          escape,
+          prefix,
+          parser,
+          options,
+        }: {
+          aliases?: QueryCustomType[];
+          escape?: boolean;
+          prefix?: string;
+          parser?: Parser&lt;T&gt;;
+          options?: ParserOptions;
+        }) &#x3D;&gt; {
+          let values &#x3D; names.map((n: any) &#x3D;&gt;
+            render(n, { aliases, escape, prefix, parser, options })
+          );
+          if (prefix &amp;&amp; (names.length &#x3D;&#x3D;&#x3D; 0 || typeof names[0] &#x3D;&#x3D;&#x3D; &#x27;string&#x27;)) {
+            values &#x3D; [prefix, ...values];
+          }
+          return values.join(&#x27;/&#x27;);
+        };
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;clone&#x27;) {
+        return () &#x3D;&gt; FieldFactory([...names]);
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;isField&#x27;) {
+        return () &#x3D;&gt; true;
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;toJson&#x27;) {
+        return () &#x3D;&gt; ({
+          $type: &#x27;Field&#x27;,
+          names: names,
+        });
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;resolve&#x27;) {
+        return (parser: any) &#x3D;&gt;
+          names.reduce(
+            (acc: any, name: string | Renderable) &#x3D;&gt;
+              typeof name &#x3D;&#x3D;&#x3D; &#x27;string&#x27;
+                ? acc?.field(name)
+                : name?.resolve(parser),
+            parser
+          );
+      } else {
+        return FieldFactory([...names, key as string]);
+      }
+    },
 
-  static factory&lt;T extends object&gt;(name: string &#x3D; &#x27;&#x27;) {
-    return new Proxy({ _name: name } as T, new Field&lt;T&gt;());
-  }
+    has(target: T, key: string): any {
+      return (
+        [&#x27;toJson&#x27;, &#x27;isField&#x27;, &#x27;clone&#x27;, &#x27;render&#x27;, &#x27;resolve&#x27;].includes(key) ||
+        key in target
+      );
+    },
+  });
 
-  get(target: T, key: string | symbol): any {
-    let name &#x3D; (target as any)[&#x27;_name&#x27;];
-    if (key &#x3D;&#x3D;&#x3D; &#x27;render&#x27;) {
-      return ({ prefix }: { prefix?: string }) &#x3D;&gt;
-        prefix ? &#x60;${prefix}/${name}&#x60; : name;
-    } else if (key &#x3D;&#x3D;&#x3D; &#x27;clone&#x27;) {
-      return () &#x3D;&gt; Field.factory(name);
-    } else if (key &#x3D;&#x3D;&#x3D; Symbol.toStringTag) {
-      return () &#x3D;&gt; &#x27;Field&#x27;;
-    } else if (key &#x3D;&#x3D;&#x3D; &#x27;toJSON&#x27;) {
-      return () &#x3D;&gt; ({
-        $type: Types.rawType(this),
-        name: name,
-      });
-    } else {
-      name &#x3D; name ? &#x60;${name}/${key as string}&#x60; : key;
-      return new Proxy({ _name: name } as any, this);
+export const RenderableFactory &#x3D; (value: any): Renderable &#x3D;&gt; {
+  if (Types.isPlainObject(value) &amp;&amp; &#x27;$type&#x27; in value) {
+    switch (value.$type) {
+      case &#x27;SelectExpression&#x27;:
+        return SelectExpression.fromJson(value);
+      case &#x27;ExpandExpression&#x27;:
+        return ExpandExpression.fromJson(value);
+      case &#x27;ComputeExpression&#x27;:
+        return ComputeExpression.fromJson(value);
+      case &#x27;FilterExpression&#x27;:
+        return FilterExpression.fromJson(value);
+      case &#x27;OrderByExpression&#x27;:
+        return OrderByExpression.fromJson(value);
+      case &#x27;SearchExpression&#x27;:
+        return SearchExpression.fromJson(value);
+      case &#x27;CountExpression&#x27;:
+        return CountExpression.fromJson(value);
+      case &#x27;Function&#x27;:
+        return Function.fromJson(value);
+      case &#x27;Operator&#x27;:
+        return Operator.fromJson(value);
+      case &#x27;Grouping&#x27;:
+        return Grouping.fromJson(value);
+      case &#x27;Lambda&#x27;:
+        return Lambda.fromJson(value);
+      case &#x27;Type&#x27;:
+        return Type.fromJson(value);
+      case &#x27;Field&#x27;:
+        return FieldFactory(value[&#x27;names&#x27;]);
+      default:
+        return value;
     }
   }
-
-  has(target: T, key: string): any {
-    return [&#x27;toJSON&#x27;, &#x27;clone&#x27;, &#x27;render&#x27;].includes(key) || key in target;
-  }
-}
+  return value;
+};
 
 function applyMixins(derivedCtor: any, constructors: any[]) {
   constructors.forEach((baseCtor) &#x3D;&gt; {
@@ -386,7 +485,7 @@ function applyMixins(derivedCtor: any, constructors: any[]) {
         derivedCtor.prototype,
         name,
         Object.getOwnPropertyDescriptor(baseCtor.prototype, name) ||
-        Object.create(null)
+          Object.create(null)
       );
     });
   });
@@ -399,29 +498,68 @@ export function render(
     normalize,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     normalize?: boolean;
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;any&gt;;
+    options?: ParserOptions;
   } &#x3D; {}
 ): string | number | boolean | null {
-  if (typeof value &#x3D;&#x3D;&#x3D; &#x27;function&#x27;) {
-    return render(value(syntax), { aliases, normalize, prefix });
+  if (Types.isFunction(value)) {
+    return render(value(syntax), {
+      aliases,
+      normalize,
+      prefix,
+      parser,
+      options,
+    });
   }
-  if (
-    typeof value &#x3D;&#x3D;&#x3D; &#x27;object&#x27; &amp;&amp;
-    value !&#x3D;&#x3D; null &amp;&amp;
-    value.render !&#x3D;&#x3D; undefined
-  ) {
-    return render(value.render({ aliases, escape, prefix }), {
+  if (Types.isObject(value) &amp;&amp; &#x27;render&#x27; in value) {
+    return render(value.render({ aliases, escape, prefix, parser, options }), {
       aliases,
       normalize,
       escape,
       prefix,
+      parser,
+      options,
     });
   }
   return normalize ? normalizeValue(value, { aliases, escape }) : value;
+}
+
+export function resolve(values: any, parser?: Parser&lt;any&gt;) {
+  if (parser !&#x3D;&#x3D; undefined) {
+    let fields &#x3D; values.filter(
+      (v: any) &#x3D;&gt; Types.isObject(v) &amp;&amp; &#x27;isField&#x27; in v &amp;&amp; v.isField()
+    );
+    if (fields.length &#x3D;&#x3D;&#x3D; 1 &amp;&amp; Types.isObject(parser) &amp;&amp; &#x27;field&#x27; in parser) {
+      return fields[0].resolve(parser);
+    }
+  }
+  return parser;
+}
+
+export function encode(
+  values: any,
+  parser?: Parser&lt;any&gt;,
+  options?: ParserOptions
+) {
+  if (parser !&#x3D;&#x3D; undefined) {
+    return values.map((v: any) &#x3D;&gt; {
+      if (Types.isArray(v)) return encode(v, parser, options);
+      if (Types.isObject(v) || v &#x3D;&#x3D; null) return v;
+      try {
+        return parser.encode(v, options);
+      } catch {
+        return v;
+      }
+    });
+  }
+  return values;
 }
 
 export class Function&lt;T&gt; implements Renderable {
@@ -430,37 +568,67 @@ export class Function&lt;T&gt; implements Renderable {
     protected values: any[],
     protected normalize: Normalize,
     protected escape: boolean &#x3D; false
-  ) { }
+  ) {}
 
   get [Symbol.toStringTag]() {
     return &#x27;Function&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       name: this.name,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Function&lt;T&gt; {
+    return new Function&lt;T&gt;(
+      json[&#x27;name&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;normalize&#x27;],
+      json[&#x27;escape&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [field, ...values] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, ...values] &#x3D; encode(this.values, parser, options);
 
-    field &#x3D; render(field, { aliases, escape, prefix, normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27; });
+    left &#x3D; render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27;,
+      options,
+    });
     const params &#x3D; [
-      field,
-      ...values.map((v) &#x3D;&gt;
-        render(v, { aliases, escape, prefix, normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27; })
+      left,
+      ...values.map((v: any) &#x3D;&gt;
+        render(v, {
+          aliases,
+          escape,
+          prefix,
+          parser,
+          normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+          options,
+        })
       ),
     ];
     return &#x60;${this.name}(${params.join(&#x27;, &#x27;)})&#x60;;
@@ -473,6 +641,10 @@ export class Function&lt;T&gt; implements Renderable {
       this.normalize,
       this.escape
     );
+  }
+
+  resolve(parser: any) {
+    return parser;
   }
 }
 
@@ -501,7 +673,12 @@ export class StringAndCollectionFunctions&lt;T&gt; {
     return new Function&lt;T&gt;(&#x27;startswith&#x27;, [left, right], normalize);
   }
 
-  subString(left: any, right: number, length?: number, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+  subString(
+    left: any,
+    right: number,
+    length?: number,
+    normalize: Normalize &#x3D; &#x27;none&#x27;
+  ) {
     let values &#x3D; [left, right];
     if (length !&#x3D;&#x3D; undefined) {
       values.push(length);
@@ -520,7 +697,11 @@ export class CollectionFunctions&lt;T&gt; {
 }
 
 export class StringFunctions&lt;T&gt; {
-  matchesPattern(left: any | string, pattern: string, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+  matchesPattern(
+    left: any | string,
+    pattern: string,
+    normalize: Normalize &#x3D; &#x27;none&#x27;
+  ) {
     return new Function&lt;T&gt;(&#x27;matchesPattern&#x27;, [left, pattern], normalize);
   }
   toLower(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
@@ -592,12 +773,18 @@ export class ArithmeticFunctions&lt;T&gt; {
 }
 
 export class TypeFunctions&lt;T&gt; {
-  cast(left: T | string, right?: string, normalize: Normalize &#x3D; &#x27;right&#x27;) {
-    return new Function&lt;T&gt;(&#x27;cast&#x27;, [left, right], normalize);
+  cast&lt;N&gt;(left: T | string, type?: string): N {
+    return FieldFactory&lt;Readonly&lt;Required&lt;N&gt;&gt;&gt;([
+      type !&#x3D;&#x3D; undefined
+        ? new Type&lt;T&gt;(&#x27;cast&#x27;, type, left)
+        : new Type&lt;T&gt;(&#x27;cast&#x27;, left as string),
+    ]);
   }
 
-  isof(left: T | string, right?: string, normalize: Normalize &#x3D; &#x27;right&#x27;) {
-    return new Function&lt;T&gt;(&#x27;isof&#x27;, [left, right], normalize);
+  isof(left: T | string, type?: string) {
+    return type !&#x3D;&#x3D; undefined
+      ? new Type&lt;T&gt;(&#x27;isof&#x27;, type, left)
+      : new Type&lt;T&gt;(&#x27;isof&#x27;, left as string);
   }
 }
 
@@ -624,51 +811,78 @@ export class Operator&lt;T&gt; implements Renderable {
     protected op: string,
     protected values: any[],
     protected normalize: Normalize
-  ) { }
+  ) {}
 
   get [Symbol.toStringTag]() {
     return &#x27;Operator&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Operator&lt;T&gt; {
+    return new Operator&lt;T&gt;(
+      json[&#x27;op&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;normalize&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [left, right] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, right] &#x3D; encode(this.values, parser, options);
 
-    left &#x3D; render(left, { aliases, escape, prefix, normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27; });
+    left &#x3D; render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27;,
+      options,
+    });
     if (right !&#x3D;&#x3D; undefined) {
       right &#x3D; Array.isArray(right)
         ? &#x60;(${right
-          .map((v) &#x3D;&gt;
-            render(v, {
-              aliases,
-              escape,
-              prefix,
-              normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
-            })
-          )
-          .join(&#x27;,&#x27;)})&#x60;
+            .map((v) &#x3D;&gt;
+              render(v, {
+                aliases,
+                escape,
+                prefix,
+                parser,
+                normalize:
+                  this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+                options,
+              })
+            )
+            .join(&#x27;,&#x27;)})&#x60;
         : render(right, {
-          aliases,
-          escape,
-          prefix,
-          normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
-        });
+            aliases,
+            escape,
+            prefix,
+            parser,
+            normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+            options,
+          });
       return &#x60;${left} ${this.op} ${right}&#x60;;
     }
     return &#x60;${this.op}(${left})&#x60;;
@@ -680,6 +894,9 @@ export class Operator&lt;T&gt; implements Renderable {
       this.values.map((v) &#x3D;&gt; Objects.clone(v)),
       this.normalize
     );
+  }
+  resolve(parser: any) {
+    return parser;
   }
 }
 
@@ -743,33 +960,115 @@ export class ArithmeticOperators&lt;T&gt; {
 }
 
 export class Grouping&lt;T&gt; implements Renderable {
-  constructor(protected group: Renderable) { }
+  constructor(protected group: Renderable) {}
 
   get [Symbol.toStringTag]() {
     return &#x27;Grouping&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
-      group: this.group.toJSON(),
+      group: this.group.toJson(),
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Grouping&lt;T&gt; {
+    return new Grouping&lt;T&gt;(json[&#x27;group&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)));
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    return &#x60;(${render(this.group, { aliases, escape, prefix })})&#x60;;
+    return &#x60;(${render(this.group, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })})&#x60;;
   }
 
   clone() {
     return new Grouping(Objects.clone(this.group));
+  }
+  resolve(parser: any) {
+    return parser;
+  }
+}
+
+export class Type&lt;T&gt; implements Renderable {
+  constructor(
+    protected name: string,
+    protected type: string,
+    protected value?: any
+  ) {}
+  get [Symbol.toStringTag]() {
+    return &#x27;Type&#x27;;
+  }
+
+  toJson() {
+    return {
+      $type: Types.rawType(this),
+      name: this.name,
+      type: this.type,
+      value: this.value,
+    };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Type&lt;T&gt; {
+    return new Type&lt;T&gt;(
+      json[&#x27;name&#x27;],
+      json[&#x27;type&#x27;],
+      RenderableFactory(json[&#x27;value&#x27;])
+    );
+  }
+
+  render({
+    aliases,
+    escape,
+    prefix,
+    parser,
+    options,
+  }: {
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
+  }): string {
+    if (this.value) {
+      parser &#x3D; resolve([this.value], parser);
+      let [left, right] &#x3D; encode([this.value], parser, options);
+
+      left &#x3D; render(left, { aliases, escape, prefix, parser, options });
+      return &#x60;${this.name}(${left}, &#x27;${this.type}&#x27;)&#x60;;
+    } else {
+      return &#x60;${this.name}(&#x27;${this.type}&#x27;)&#x60;;
+    }
+  }
+
+  clone() {
+    return new Type(this.name, this.type, Objects.clone(this.value));
+  }
+
+  resolve(parser: any) {
+    parser &#x3D;
+      parser instanceof ODataStructuredTypeFieldParser &amp;&amp;
+      parser.isStructuredType()
+        ? parser.structured()
+        : parser;
+    return parser?.findChildParser((p: any) &#x3D;&gt; p.isTypeOf(this.type));
   }
 }
 
@@ -778,39 +1077,56 @@ export class Lambda&lt;T&gt; implements Renderable {
     protected op: string,
     protected values: any[],
     protected alias?: string
-  ) { }
+  ) {}
 
   get [Symbol.toStringTag]() {
     return &#x27;Lambda&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       alias: this.alias,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Lambda&lt;T&gt; {
+    return new Lambda&lt;T&gt;(
+      json[&#x27;op&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;alias&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [left, right] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, right] &#x3D; encode(this.values, parser, options);
 
-    left &#x3D; render(left, { aliases, escape, prefix });
+    left &#x3D; render(left, { aliases, escape, prefix, parser });
     if (right) {
       let alias &#x3D; this.alias || left.split(&#x27;/&#x27;).pop().toLowerCase()[0];
       return &#x60;${left}/${this.op}(${alias}:${render(right, {
         aliases,
         escape,
         prefix: alias,
+        options,
+        parser,
       })})&#x60;;
     } else {
       return &#x60;${left}/${this.op}()&#x60;;
@@ -824,6 +1140,9 @@ export class Lambda&lt;T&gt; implements Renderable {
       this.alias
     );
   }
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class LambdaOperators&lt;T&gt; {
@@ -836,11 +1155,11 @@ export class LambdaOperators&lt;T&gt; {
   }
 }
 
-export class ODataOperators&lt;T&gt; { }
+export class ODataOperators&lt;T&gt; {}
 export interface ODataOperators&lt;T&gt;
   extends LogicalOperators&lt;T&gt;,
-  ArithmeticOperators&lt;T&gt;,
-  LambdaOperators&lt;T&gt; { }
+    ArithmeticOperators&lt;T&gt;,
+    LambdaOperators&lt;T&gt; {}
 
 applyMixins(ODataOperators, [
   LogicalOperators,
@@ -849,16 +1168,16 @@ applyMixins(ODataOperators, [
 ]);
 export const operators: ODataOperators&lt;any&gt; &#x3D; new ODataOperators&lt;any&gt;();
 
-export class ODataFunctions&lt;T&gt; { }
+export class ODataFunctions&lt;T&gt; {}
 export interface ODataFunctions&lt;T&gt;
   extends StringAndCollectionFunctions&lt;T&gt;,
-  CollectionFunctions&lt;T&gt;,
-  StringFunctions&lt;T&gt;,
-  DateAndTimeFunctions&lt;T&gt;,
-  ArithmeticFunctions&lt;T&gt;,
-  TypeFunctions&lt;T&gt;,
-  GeoFunctions&lt;T&gt;,
-  ConditionalFunctions&lt;T&gt; { }
+    CollectionFunctions&lt;T&gt;,
+    StringFunctions&lt;T&gt;,
+    DateAndTimeFunctions&lt;T&gt;,
+    ArithmeticFunctions&lt;T&gt;,
+    TypeFunctions&lt;T&gt;,
+    GeoFunctions&lt;T&gt;,
+    ConditionalFunctions&lt;T&gt; {}
 
 applyMixins(ODataFunctions, [
   StringAndCollectionFunctions,
@@ -872,8 +1191,8 @@ applyMixins(ODataFunctions, [
 ]);
 export const functions: ODataFunctions&lt;any&gt; &#x3D; new ODataFunctions&lt;any&gt;();
 
-export class ODataSyntax&lt;T&gt; { }
-export interface ODataSyntax&lt;T&gt; extends ODataOperators&lt;T&gt;, ODataFunctions&lt;T&gt; { }
+export class ODataSyntax&lt;T&gt; {}
+export interface ODataSyntax&lt;T&gt; extends ODataOperators&lt;T&gt;, ODataFunctions&lt;T&gt; {}
 applyMixins(ODataSyntax, [ODataOperators, ODataFunctions]);
 
 export const syntax: ODataSyntax&lt;any&gt; &#x3D; new ODataSyntax&lt;any&gt;();

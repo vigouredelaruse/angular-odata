@@ -33,7 +33,7 @@ describe('OData search builder', () => {
   describe('base condition', () => {
     describe('as factory function', () => {
       it('field', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ e, t }) =>
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
           e().field(t.Car)
         );
 
@@ -41,7 +41,7 @@ describe('OData search builder', () => {
       });
 
       it('navigation', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ e, t }) =>
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
           e().field(t.Car?.Model)
         );
 
@@ -53,11 +53,11 @@ describe('OData search builder', () => {
   describe('nested condition', () => {
     describe('as factory function', () => {
       it('field', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ e, t }) =>
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
           e().field(t.Car, (f) => {
-            f.expand<Car>(({ e, t }) => e().field(t.Model));
+            f.expand(({ e, t }) => e().field(t.Model));
             f.skip(1);
-            f.filter<Car>(({ e, t }) => e().eq(t.Year, 2000));
+            f.filter(({ e, t }) => e().eq(t.Year, 2000));
           })
         );
 
@@ -67,9 +67,9 @@ describe('OData search builder', () => {
       });
 
       it('navigation', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ e, t }) =>
-          e().field(t.Car?.Model, (f) => {
-            f.filter<Model>(({ e, t }) => e().in(t.Name, ['BMW', 'Audi']));
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
+          e().field(t.Car.Model!, (f) => {
+            f.filter(({ e, t }) => e().in(t.Name, ['BMW', 'Audi']));
             f.skip(1);
             f.top(1);
           })

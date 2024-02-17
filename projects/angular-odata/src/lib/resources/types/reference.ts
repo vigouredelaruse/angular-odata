@@ -37,14 +37,20 @@ export class ODataReferenceResource<T> extends ODataResource<T> {
     target: ODataEntityResource<any>,
     options?: ODataOptions
   ): Observable<any> {
-    return super.post({ [ODATA_ID]: target.endpointUrl(false) }, options);
+    return super.post(
+      { [ODATA_ID]: target.endpointUrl({ params: false }) },
+      options
+    );
   }
 
   protected override put(
     target: ODataEntityResource<any>,
     options?: ODataOptions
   ): Observable<any> {
-    return super.put({ [ODATA_ID]: target.endpointUrl(false) }, options);
+    return super.put(
+      { [ODATA_ID]: target.endpointUrl({ params: false }) },
+      options
+    );
   }
 
   protected override delete({
@@ -56,7 +62,7 @@ export class ODataReferenceResource<T> extends ODataResource<T> {
     target?: ODataEntityResource<any>;
   } & ODataOptions = {}): Observable<any> {
     if (target) {
-      options.params = { [$ID]: target.endpointUrl(false) };
+      options.params = { [$ID]: target.endpointUrl({ params: false }) };
     }
     return super.delete({ etag, ...options });
   }

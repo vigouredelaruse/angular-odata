@@ -102,7 +102,7 @@
 
 <ol class="breadcrumb">
   <li class="breadcrumb-item">Classes</li>
-  <li class="breadcrumb-item" >LogicalOperators</li>
+  <li class="breadcrumb-item" >Type</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
@@ -132,6 +132,12 @@
 
 
 
+            <p class="comment">
+                <h3>Implements</h3>
+            </p>
+            <p class="comment">
+                            <code><a href="../interfaces/Renderable.html" target="_self" >Renderable</a></code>
+            </p>
 
 
             <section data-compodoc="block-index">
@@ -148,31 +154,20 @@
                     <td class="col-md-4">
                         <ul class="index-list">
                             <li>
-                                <a href="#eq" >eq</a>
+                                <a href="#clone" >clone</a>
                             </li>
                             <li>
-                                <a href="#ge" >ge</a>
+                                    <span class="modifier">Static</span>
+                                <a href="#fromJson" >fromJson</a>
                             </li>
                             <li>
-                                <a href="#gt" >gt</a>
+                                <a href="#render" >render</a>
                             </li>
                             <li>
-                                <a href="#has" >has</a>
+                                <a href="#resolve" >resolve</a>
                             </li>
                             <li>
-                                <a href="#in" >in</a>
-                            </li>
-                            <li>
-                                <a href="#le" >le</a>
-                            </li>
-                            <li>
-                                <a href="#lt" >lt</a>
-                            </li>
-                            <li>
-                                <a href="#ne" >ne</a>
-                            </li>
-                            <li>
-                                <a href="#not" >not</a>
+                                <a href="#toJson" >toJson</a>
                             </li>
                         </ul>
                     </td>
@@ -182,10 +177,96 @@
 
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Accessors</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                    <a href="#undefined" >undefined</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
         </tbody>
     </table>
 </section>
 
+            <section data-compodoc="block-constructor">
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(name: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, type: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, value?: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="660" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:660</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>name</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                        <td>type</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                        <td>value</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            Yes
+                                                    </td>
+                                                    
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
 
 
             <section data-compodoc="block-methods">
@@ -197,27 +278,74 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="eq"></a>
+                    <a name="clone"></a>
                     <span class="name">
-                        <span ><b>eq</b></span>
-                        <a href="#eq"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>clone</b></span>
+                        <a href="#clone"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>eq(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>clone()</code>
                 </td>
             </tr>
 
 
                     <tr>
                         <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="554"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:554</a></div>
+                            <div class="io-line">Defined in <a href="" data-line="711"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:711</a></div>
                         </td>
                     </tr>
 
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/Type.html" target="_self" >Type&lt;unknown&gt;</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fromJson"></a>
+                    <span class="name">
+                            <span class="modifier">Static</span>
+                        <span ><b>fromJson</b></span>
+                        <a href="#fromJson"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>fromJson(json: literal type)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="679"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:679</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>T</li>
+                            </ul>
+                        </td>
+                    </tr>
 
             <tr>
                 <td class="col-md-4">
@@ -231,58 +359,26 @@
                                             <td>Name</td>
                                                 <td>Type</td>
                                             <td>Optional</td>
-                                                <td>Default value</td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                                <td>left</td>
+                                                <td>json</td>
                                             <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                                        <code>literal type</code>
                                             </td>
 
                                             <td>
                                                     No
                                             </td>
 
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
 
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
+                            <b>Returns : </b>        <code><a href="../classes/Type.html" target="_self" >Type&lt;T&gt;</a></code>
 
                         </div>
                             <div class="io-description">
@@ -296,24 +392,24 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="ge"></a>
+                    <a name="render"></a>
                     <span class="name">
-                        <span ><b>ge</b></span>
-                        <a href="#ge"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>render</b></span>
+                        <a href="#render"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>ge(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>render(undefined: literal type)</code>
                 </td>
             </tr>
 
 
                     <tr>
                         <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="563"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:563</a></div>
+                            <div class="io-line">Defined in <a href="" data-line="687"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:687</a></div>
                         </td>
                     </tr>
 
@@ -330,58 +426,25 @@
                                             <td>Name</td>
                                                 <td>Type</td>
                                             <td>Optional</td>
-                                                <td>Default value</td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                                <td>left</td>
                                             <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                                        <code>literal type</code>
                                             </td>
 
                                             <td>
                                                     No
                                             </td>
 
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
 
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
 
                         </div>
                             <div class="io-description">
@@ -395,24 +458,24 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="gt"></a>
+                    <a name="resolve"></a>
                     <span class="name">
-                        <span ><b>gt</b></span>
-                        <a href="#gt"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>resolve</b></span>
+                        <a href="#resolve"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>gt(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>resolve(parser: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
                 </td>
             </tr>
 
 
                     <tr>
                         <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="560"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:560</a></div>
+                            <div class="io-line">Defined in <a href="" data-line="715"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:715</a></div>
                         </td>
                     </tr>
 
@@ -429,12 +492,11 @@
                                             <td>Name</td>
                                                 <td>Type</td>
                                             <td>Optional</td>
-                                                <td>Default value</td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                                <td>left</td>
+                                                <td>parser</td>
                                             <td>
                                                             <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
                                             </td>
@@ -443,44 +505,13 @@
                                                     No
                                             </td>
 
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
 
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
                         </div>
                             <div class="io-description">
@@ -494,24 +525,24 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="has"></a>
+                    <a name="toJson"></a>
                     <span class="name">
-                        <span ><b>has</b></span>
-                        <a href="#has"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>toJson</b></span>
+                        <a href="#toJson"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>has(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
+<code>toJson()</code>
                 </td>
             </tr>
 
 
                     <tr>
                         <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="583"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:583</a></div>
+                            <div class="io-line">Defined in <a href="" data-line="670"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:670</a></div>
                         </td>
                     </tr>
 
@@ -519,553 +550,10 @@
             <tr>
                 <td class="col-md-4">
 
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
                         <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
+                            <b>Returns : </b>    <code>{ $type: any; name: string; type: string; value: any; }</code>
 
                         </div>
-                            <div class="io-description">
-                                
-                            </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="in"></a>
-                    <span class="name">
-                        <span ><b>in</b></span>
-                        <a href="#in"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-<code>in(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
-                </td>
-            </tr>
-
-
-                    <tr>
-                        <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="586"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:586</a></div>
-                        </td>
-                    </tr>
-
-
-            <tr>
-                <td class="col-md-4">
-
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
-
-                        </div>
-                            <div class="io-description">
-                                
-                            </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="le"></a>
-                    <span class="name">
-                        <span ><b>le</b></span>
-                        <a href="#le"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-<code>le(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
-                </td>
-            </tr>
-
-
-                    <tr>
-                        <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="569"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:569</a></div>
-                        </td>
-                    </tr>
-
-
-            <tr>
-                <td class="col-md-4">
-
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
-
-                        </div>
-                            <div class="io-description">
-                                
-                            </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="lt"></a>
-                    <span class="name">
-                        <span ><b>lt</b></span>
-                        <a href="#lt"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-<code>lt(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
-                </td>
-            </tr>
-
-
-                    <tr>
-                        <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="566"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:566</a></div>
-                        </td>
-                    </tr>
-
-
-            <tr>
-                <td class="col-md-4">
-
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
-
-                        </div>
-                            <div class="io-description">
-                                
-                            </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="ne"></a>
-                    <span class="name">
-                        <span ><b>ne</b></span>
-                        <a href="#ne"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-<code>ne(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, right: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
-                </td>
-            </tr>
-
-
-                    <tr>
-                        <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="557"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:557</a></div>
-                        </td>
-                    </tr>
-
-
-            <tr>
-                <td class="col-md-4">
-
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>right</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;right&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;unknown&gt;</a></code>
-
-                        </div>
-                            <div class="io-description">
-                                
-                            </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="not"></a>
-                    <span class="name">
-                        <span ><b>not</b></span>
-                        <a href="#not"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-<code>not(left: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, normalize: <a href="../undefineds/Normalize.html" target="_self">Normalize</a>)</code>
-                </td>
-            </tr>
-
-
-                    <tr>
-                        <td class="col-md-4">
-                            <div class="io-line">Defined in <a href="" data-line="580"
-                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:580</a></div>
-                        </td>
-                    </tr>
-
-
-            <tr>
-                <td class="col-md-4">
-
-                            <div class="io-description">
-                                <b>Parameters :</b>
-                                
-                                <table class="params">
-                                    <thead>
-                                        <tr>
-                                            <td>Name</td>
-                                                <td>Type</td>
-                                            <td>Optional</td>
-                                                <td>Default value</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                                <td>left</td>
-                                            <td>
-                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                                <td>normalize</td>
-                                            <td>
-                                                            <code><a href="../miscellaneous/typealiases.html#Normalize" target="_self" >Normalize</a></code>
-                                            </td>
-
-                                            <td>
-                                                    No
-                                            </td>
-
-                                            <td>
-                                                    <code>&#x27;none&#x27;</code>
-                                            </td>
-
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <div class="io-description">
-                            <b>Returns : </b>        <code><a href="../classes/Operator.html" target="_self" >Operator&lt;T&gt;</a></code>
-
-                        </div>
-                            <div class="io-description">
-                                
-                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1076,6 +564,33 @@
 
 
 
+            <section data-compodoc="block-accessors">
+    <h3 id="accessors">
+        Accessors
+    </h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="undefined"></a>
+                        <span class="name"><b>undefined</b><a href="#undefined"><span class="icon ion-ios-link"></span></a></span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <span class="accessor"><b>get</b><code>()</code></span>
+                    </td>
+                </tr>
+                            <tr>
+                                <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="666" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:666</a></div>
+                                </td>
+                            </tr>
+
+            </tbody>
+        </table>
+</section>
     </div>
 
 
@@ -1966,7 +1481,7 @@ export const syntax: ODataSyntax&lt;any&gt; &#x3D; new ODataSyntax&lt;any&gt;();
        <script>
             var COMPODOC_CURRENT_PAGE_DEPTH = 1;
             var COMPODOC_CURRENT_PAGE_CONTEXT = 'class';
-            var COMPODOC_CURRENT_PAGE_URL = 'LogicalOperators.html';
+            var COMPODOC_CURRENT_PAGE_URL = 'Type.html';
             var MAX_SEARCH_RESULTS = 15;
        </script>
 

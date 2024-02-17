@@ -52,8 +52,8 @@ export class ODataResource<T> {
     } = {}
   ) {
     this.api = api;
-    this.pathSegments = segments || new ODataPathSegments();
-    this.queryOptions = query || new ODataQueryOptions();
+    this.pathSegments = segments ?? new ODataPathSegments();
+    this.queryOptions = query ?? new ODataQueryOptions();
     this.schema = schema;
   }
 
@@ -106,7 +106,7 @@ export class ODataResource<T> {
     let entitySet = annots?.entitySet;
     if (entitySet !== undefined) {
       resource = this.api.entitySet<T>(entitySet).entity(entity as Partial<T>);
-      resource.query((q) => q.apply(this.queryOptions.toQueryArguments()));
+      resource.query((q) => q.restore(this.queryOptions.toQueryArguments()));
     }
     return new ModelType(entity, { resource, annots, reset }) as M;
   }
@@ -123,11 +123,19 @@ export class ODataResource<T> {
     let path = annots?.entitySet;
     if (path !== undefined) {
       resource = this.api.entitySet<T>(path);
-      resource.query((q) => q.apply(this.queryOptions.toQueryArguments()));
+      resource.query((q) => q.restore(this.queryOptions.toQueryArguments()));
     }
     return new CollectionType(entities, { resource, annots, reset }) as C;
   }
   //#endregion
+
+  isTypeOf(other: ODataResource<any>) {
+    return (
+      this.schema !== undefined &&
+      other.schema !== undefined &&
+      this.schema?.isTypeOf(other.schema.type())
+    );
+  }
 
   isSubtypeOf(other: ODataResource<any>) {
     return (
@@ -155,24 +163,49 @@ export class ODataResource<T> {
       : otherPath === selfPath && Types.isEqual(selfParams, otherParams);
   }
 
-  pathAndParams(escape: boolean = false): [string, { [name: string]: any }] {
-    const [spath, sparams] = this.pathSegments.pathAndParams(escape);
-    const [, qparams] = this.queryOptions.pathAndParams(escape);
+  pathAndParams(
+    { escape, ...options }: ParserOptions & { escape?: boolean } = {
+      escape: false,
+    }
+  ): [string, { [name: string]: any }] {
+    const parser =
+      this.schema !== undefined && 'parser' in this.schema
+        ? ((<any>this.schema).parser as Parser<T>)
+        : undefined;
+    const [spath, sparams] = this.pathSegments.pathAndParams({
+      escape,
+      parser,
+      options,
+    });
+    const [, qparams] = this.queryOptions.pathAndParams({
+      escape,
+      parser,
+      options,
+    });
 
     return [spath, { ...sparams, ...qparams }];
   }
 
-  endpointUrl(params: boolean = true) {
-    if (params) {
-      return `${this.api.serviceRootUrl}${this}`;
-    } else {
-      let [path] = this.pathAndParams();
-      return `${this.api.serviceRootUrl}${path}`;
+  endpointUrl({
+    escape = false,
+    params = true,
+    ...options
+  }: ParserOptions & { escape?: boolean; params?: boolean } = {}): string {
+    let [path, qparams] = this.pathAndParams({ escape, ...options });
+    if (params && !Types.isEmpty(qparams)) {
+      path = `${path}${QUERY_SEPARATOR}${Object.entries(qparams)
+        .map((e) => `${e[0]}${VALUE_SEPARATOR}${e[1]}`)
+        .join(PARAM_SEPARATOR)}`;
     }
+    return `${this.api.serviceRootUrl}${path}`;
   }
 
-  toString(): string {
-    let [path, params] = this.pathAndParams();
+  toString(
+    { escape, ...options }: ParserOptions & { escape?: boolean } = {
+      escape: false,
+    }
+  ): string {
+    let [path, params] = this.pathAndParams({ escape, ...options });
     let queryString = Object.entries(params)
       .map((e) => `${e[0]}${VALUE_SEPARATOR}${e[1]}`)
       .join(PARAM_SEPARATOR);
@@ -188,10 +221,10 @@ export class ODataResource<T> {
     });
   }
 
-  private __parser(
+  private __serializeParser(
     value: any,
     options?: ParserOptions,
-    type?: string
+    resourceType?: string
   ): Parser<T> | undefined {
     const dataType =
       options !== undefined && Types.isPlainObject(value)
@@ -203,9 +236,28 @@ export class ODataResource<T> {
     } else if (this.schema !== undefined && 'parser' in this.schema) {
       // Parser from resource schema
       return (<any>this.schema).parser as Parser<T> | undefined;
-    } else if (type !== undefined) {
+    } else if (resourceType !== undefined) {
       // Parser from resource type
+      return this.api.parserForType<T>(resourceType);
+    }
+    return undefined;
+  }
+
+  private __deserializeParser(
+    value: any,
+    options?: ParserOptions,
+    resourceType?: string
+  ): Parser<T> | undefined {
+    const type =
+      options !== undefined && Types.isPlainObject(value)
+        ? ODataHelper[options.version || DEFAULT_VERSION].type(value)
+        : resourceType;
+    if (type !== undefined) {
+      // Parser from type
       return this.api.parserForType<T>(type);
+    } else if (this.schema !== undefined && 'parser' in this.schema) {
+      // Parser from resource schema
+      return (<any>this.schema).parser as Parser<T> | undefined;
     }
     return undefined;
   }
@@ -213,7 +265,7 @@ export class ODataResource<T> {
   deserialize(value: any, options?: ParserOptions): any {
     const resourceType = this.returnType();
     const _d = (value: any, options?: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+      const parser = this.__deserializeParser(value, options, resourceType);
       return parser !== undefined && 'deserialize' in parser
         ? parser.deserialize(value, options)
         : value;
@@ -226,7 +278,7 @@ export class ODataResource<T> {
   serialize(value: any, options?: ParserOptions): any {
     const resourceType = this.type();
     const _s = (value: any, options?: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+      const parser = this.__serializeParser(value, options, resourceType);
       return parser !== undefined && 'serialize' in parser
         ? parser.serialize(value, options)
         : value;
@@ -239,7 +291,7 @@ export class ODataResource<T> {
   encode(value: any, options?: ParserOptions): any {
     const resourceType = this.type();
     const _e = (value: any, options?: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+      const parser = this.__serializeParser(value, options, resourceType);
       return parser !== undefined && 'encode' in parser
         ? parser.encode(value, options)
         : value;
@@ -249,10 +301,10 @@ export class ODataResource<T> {
       : _e(value, options);
   }
 
-  toJSON() {
+  toJson() {
     return {
-      segments: this.pathSegments.toJSON(),
-      options: this.queryOptions.toJSON(),
+      segments: this.pathSegments.toJson(),
+      options: this.queryOptions.toJson(),
     };
   }
 
@@ -263,6 +315,7 @@ export class ODataResource<T> {
   //#region Query Options
   clearQuery() {
     this.queryOptions.clear();
+    return this;
   }
 
   cloneQuery<P>() {

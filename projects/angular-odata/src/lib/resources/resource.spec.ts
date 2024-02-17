@@ -131,6 +131,19 @@ describe('ODataResource', () => {
     expect(fun.toString()).toEqual('People/NS.MyFunction()');
   });
 
+  it('should create collection function with nos parenthesis', () => {
+    const set: ODataEntitySetResource<Person> =
+      ODataEntitySetResource.factory<Person>(client.defaultApi(), {
+        path: ENTITY_SET,
+      });
+    const fun: ODataFunctionResource<any, any> = set.function<any, any>(
+      'NS.MyFunction'
+    );
+    expect(
+      fun.toString({ nonParenthesisForEmptyParameterFunction: true })
+    ).toEqual('People/NS.MyFunction');
+  });
+
   it('should create entity function', () => {
     const set: ODataEntitySetResource<Person> =
       ODataEntitySetResource.factory<Person>(client.defaultApi(), {
@@ -141,6 +154,20 @@ describe('ODataResource', () => {
       'NS.MyFunction'
     );
     expect(fun.toString()).toEqual("People('russellwhyte')/NS.MyFunction()");
+  });
+
+  it('should create entity function non parenthesis', () => {
+    const set: ODataEntitySetResource<Person> =
+      ODataEntitySetResource.factory<Person>(client.defaultApi(), {
+        path: ENTITY_SET,
+      });
+    const entity = set.entity('russellwhyte');
+    const fun: ODataFunctionResource<any, any> = entity.function<any, any>(
+      'NS.MyFunction'
+    );
+    expect(
+      fun.toString({ nonParenthesisForEmptyParameterFunction: true })
+    ).toEqual("People('russellwhyte')/NS.MyFunction");
   });
 
   it('should create entity function and change parameters', () => {
@@ -522,10 +549,10 @@ describe('ODataResource', () => {
       q.expand(({ e, t }) =>
         e()
           .field(t.Friends, (f) =>
-            f.expand<Person>(({ e, t }) =>
+            f.expand(({ e, t }) =>
               e()
                 .field(t.Friends, (f) => {
-                  f.orderBy<Person>(({ e, t }) => e().ascending(t.FirstName));
+                  f.orderBy(({ e, t }) => e().ascending(t.FirstName));
                   f.top(1);
                   f.skip(1);
                   f.levels(1);
@@ -533,9 +560,11 @@ describe('ODataResource', () => {
                 })
                 .field(t.Photo)
                 .field(t.Trips, (f) => {
-                  f.filter<Trip>(({ e, t, f }) =>
+                  f.filter(({ e, t, f }) =>
                     e()
-                      .any(t.PlanItems, ({e, t}) => e().startsWith(t.ConfirmationCode, 'CO'))
+                      .any(t.PlanItems, ({ e, t }) =>
+                        e().startsWith(t.ConfirmationCode, 'CO')
+                      )
                       .eq(f.year(t.EndsAt), 1980)
                       .or(
                         e()
@@ -543,11 +572,13 @@ describe('ODataResource', () => {
                           .eq(f.year(t.EndsAt), 1981)
                       )
                   );
-                  f.expand<Trip>(({ e, t }) =>
+                  f.expand(({ e, t }) =>
                     e()
                       .field(t.Photos)
                       .field(t.PlanItems, (f) =>
-                        f.filter<PlanItem>(({ e, t }) => e().startsWith(t.Description, 'My'))
+                        f.filter(({ e, t }) =>
+                          e().startsWith(t.Description, 'My')
+                        )
                       )
                   );
                 })
@@ -561,5 +592,4 @@ describe('ODataResource', () => {
       "People('russellwhyte')?$expand=Friends($expand=Friends($orderBy=FirstName asc;$skip=1;$top=1;$count=true;$levels=1),Photo,Trips($expand=Photos,PlanItems($filter=startswith(Description, 'My'));$filter=(PlanItems/any(p:startswith(p/ConfirmationCode, 'CO')) and year(EndsAt) eq 1980) or (year(StartsAt) eq 1980 and year(EndsAt) eq 1981))),Photo,Trips"
     );
   });
-
 });

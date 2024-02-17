@@ -33,7 +33,7 @@ describe('OData search builder', () => {
   describe('base condition', () => {
     describe('as factory function', () => {
       it('term', () => {
-        const compare1 = SearchExpression.search<Person>(({ e }) =>
+        const compare1 = SearchExpression.factory<Person>(({ e }) =>
           e().term('John')
         );
 
@@ -43,7 +43,7 @@ describe('OData search builder', () => {
 
     describe('combination e().and(...).or(...)', () => {
       it('and,or', () => {
-        const compare = SearchExpression.search<Person>(({ e }) =>
+        const compare = SearchExpression.factory<Person>(({ e }) =>
           e().term('John').and(e().term('Lennon')).or(e().term('Beatles'))
         );
 

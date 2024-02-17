@@ -1,16 +1,18 @@
+import { Parser, ParserOptions } from '../../../types';
 import type { QueryCustomType } from '../builder';
 import { Expression } from './base';
 import {
-  Field,
+  FieldFactory,
   functions,
   ODataFunctions,
   ODataOperators,
   operators,
   Renderable,
+  RenderableFactory,
 } from './syntax';
 
 export type ComputeExpressionBuilder<T> = {
-  t: Required<Readonly<T>>;
+  t: Required<T>;
   e: () => ComputeExpression<T>;
 };
 export class ComputeExpression<T> extends Expression<T> {
@@ -26,7 +28,11 @@ export class ComputeExpression<T> extends Expression<T> {
     this.names = names || [];
   }
 
-  static compute<T extends object>(
+  get [Symbol.toStringTag]() {
+    return 'ComputeExpression';
+  }
+
+  static factory<T>(
     opts: (
       builder: ComputeExpressionBuilder<T>,
       current?: ComputeExpression<T>
@@ -35,24 +41,42 @@ export class ComputeExpression<T> extends Expression<T> {
   ): ComputeExpression<T> {
     return opts(
       {
-        t: Field.factory<Readonly<Required<T>>>(),
+        t: FieldFactory<Required<T>>(),
         e: () => new ComputeExpression<T>(),
       },
       current
     ) as ComputeExpression<T>;
   }
 
+  override toJson() {
+    const json = super.toJson();
+    return Object.assign(json, {
+      names: this.names,
+    });
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): ComputeExpression<T> {
+    return new ComputeExpression<T>({
+      children: json['children'].map((c: any) => RenderableFactory(c)),
+      names: json['names'],
+    });
+  }
+
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   } = {}): string {
     let children = this._children.map((n) =>
-      n.render({ aliases, escape, prefix })
+      n.render({ aliases, escape, prefix, parser, options })
     );
     return this.names
       .map((name, index) => `${children[index]} as ${name}`)
@@ -66,13 +90,13 @@ export class ComputeExpression<T> extends Expression<T> {
     });
   }
 
-  private _add(name: string, node: Renderable): ComputeExpression<T> {
+  private _add(name: string, node: Renderable): ComputeExpression<any> {
     this.names.push(name);
     this._children.push(node);
     return this;
   }
 
-  field<T extends object>(
+  field<T>(
     name: string,
     opts: (e: { o: ODataOperators<T>; f: ODataFunctions<T> }) => Renderable
   ): ComputeExpression<T> {

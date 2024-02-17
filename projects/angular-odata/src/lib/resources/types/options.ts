@@ -1,5 +1,5 @@
 import { HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
-import { FetchPolicy } from '../../types';
+import { FetchPolicy, ParserOptions } from '../../types';
 import { ODataQueryArguments } from '../query';
 
 export type ODataOptions = {
@@ -18,6 +18,7 @@ export type ODataOptions = {
   reportProgress?: boolean;
   withCredentials?: boolean;
   fetchPolicy?: FetchPolicy;
+  parserOptions?: ParserOptions;
 };
 
 export type ODataEntityOptions = ODataOptions & { responseType?: 'entity' };

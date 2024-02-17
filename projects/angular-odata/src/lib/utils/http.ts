@@ -104,15 +104,17 @@ export const Http = {
     return res;
   },
 
-  parseResponseStatus(statusLine: string): {
+  parseResponseStatus(line: string): {
     status: string;
     code: number;
     message: string;
   } {
-    const status = statusLine.split(' ')[0];
-    const code = parseInt(statusLine.split(' ')[1], 10);
-    const message = statusLine.split(' ')[2];
-    return { status, code, message };
+    const chunks = line.split(' ');
+    return {
+      status: chunks[0],
+      code: parseInt(chunks[1], 10),
+      message: chunks.slice(2).join(' '),
+    };
   },
 
   boundaryDelimiter(contentType: string): string {

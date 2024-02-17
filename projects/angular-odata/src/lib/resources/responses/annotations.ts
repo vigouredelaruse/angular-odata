@@ -6,17 +6,17 @@ export abstract class ODataAnnotations<T> {
   constructor(
     public helper: ODataVersionHelper,
     protected annotations: Map<string, any> = new Map<string, any>(),
-    protected context?: ODataContext
+    protected context?: ODataContext,
   ) {}
 
   attributes(
-    data: { [key: string]: any },
-    metadata: ODataMetadataType
+    data: { [name: string]: any },
+    metadata: ODataMetadataType,
   ): Partial<T> {
     return this.helper.attributes(data, metadata) as Partial<T>;
   }
 
-  update(data: { [key: string]: any }) {
+  update(data: { [name: string]: any }) {
     this.annotations = new Map<string, any>([
       ...this.annotations,
       ...this.helper.annotations(data),
@@ -34,7 +34,7 @@ export abstract class ODataAnnotations<T> {
   // Method
   abstract union(other: ODataAnnotations<any>): ODataAnnotations<any>;
   abstract clone(): ODataAnnotations<any>;
-  abstract data(data: { [key: string]: any }): { [key: string]: any };
+  abstract data(data: { [name: string]: any }): { [name: string]: any };
 }
 
 export class ODataPropertyAnnotations<T> extends ODataAnnotations<T> {
@@ -42,7 +42,7 @@ export class ODataPropertyAnnotations<T> extends ODataAnnotations<T> {
     return new ODataPropertyAnnotations<any>(
       this.helper,
       new Map<string, any>([...this.annotations, ...other.annotations]),
-      Object.assign({}, this.context, other.context)
+      Object.assign({}, this.context, other.context),
     );
   }
 
@@ -50,11 +50,11 @@ export class ODataPropertyAnnotations<T> extends ODataAnnotations<T> {
     return new ODataPropertyAnnotations<any>(
       this.helper,
       new Map(this.annotations),
-      this.context
+      this.context,
     );
   }
 
-  data(data: { [key: string]: any }) {
+  data(data: { [name: string]: any }) {
     return this.helper.property(data);
   }
 }
@@ -64,7 +64,7 @@ export class ODataEntityAnnotations<T> extends ODataAnnotations<T> {
     return new ODataEntityAnnotations<any>(
       this.helper,
       new Map<string, any>([...this.annotations, ...other.annotations]),
-      Object.assign({}, this.context, other.context)
+      Object.assign({}, this.context, other.context),
     );
   }
 
@@ -72,11 +72,11 @@ export class ODataEntityAnnotations<T> extends ODataAnnotations<T> {
     return new ODataEntityAnnotations<any>(
       this.helper,
       new Map(this.annotations),
-      this.context
+      this.context,
     );
   }
 
-  data(data: { [key: string]: any }) {
+  data(data: { [name: string]: any }) {
     return this.helper.entity(data);
   }
 
@@ -128,7 +128,7 @@ export class ODataEntityAnnotations<T> extends ODataAnnotations<T> {
   property<F>(name: keyof T, type: 'single'): ODataEntityAnnotations<F>;
   property<F>(
     name: keyof T,
-    type: 'single' | 'collection'
+    type: 'single' | 'collection',
   ): ODataEntityAnnotations<F> | ODataEntitiesAnnotations<F> {
     const props = this.properties.get(name);
     return type === 'collection'
@@ -136,7 +136,7 @@ export class ODataEntityAnnotations<T> extends ODataAnnotations<T> {
       : new ODataEntityAnnotations<F>(this.helper, props);
   }
 
-  private _functions?: { [key: string]: any };
+  private _functions?: { [name: string]: any };
   get functions() {
     if (this._functions === undefined) {
       this._functions = this.helper.functions(this.annotations);
@@ -154,7 +154,7 @@ export class ODataEntitiesAnnotations<T> extends ODataAnnotations<T> {
     return new ODataEntitiesAnnotations<any>(
       this.helper,
       new Map<string, any>([...this.annotations, ...other.annotations]),
-      Object.assign({}, this.context, other.context)
+      Object.assign({}, this.context, other.context),
     );
   }
 
@@ -162,11 +162,11 @@ export class ODataEntitiesAnnotations<T> extends ODataAnnotations<T> {
     return new ODataEntitiesAnnotations<any>(
       this.helper,
       new Map(this.annotations),
-      this.context
+      this.context,
     );
   }
 
-  data(data: { [key: string]: any }) {
+  data(data: { [name: string]: any }) {
     return this.helper.entities(data);
   }
 
@@ -198,12 +198,12 @@ export class ODataEntitiesAnnotations<T> extends ODataAnnotations<T> {
 
   get skiptoken() {
     let match = (this.nextLink || '').match(
-      /[&?]{1}\$skiptoken=([\d\w\s'\-]+)/
+      /[&?]{1}\$skiptoken=([\d\w\s'\-]+)/,
     );
     return match !== null ? match[1] : undefined;
   }
 
-  private _functions?: { [key: string]: any };
+  private _functions?: { [name: string]: any };
   get functions() {
     if (this._functions === undefined) {
       this._functions = this.helper.functions(this.annotations);
