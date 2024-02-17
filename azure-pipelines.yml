@@ -42,9 +42,3 @@ steps:
     customCommand: 'publish --access-public'
     customEndpoint: 'vigouredelaruse'
 
-- task: Npm@1
-  inputs:
-    command: publish
-    workingDir: './dist/angular-odata'
-    publishRegistry: useExternalRegistry
-    publishEndpoint: 'vigouredelaruse'
