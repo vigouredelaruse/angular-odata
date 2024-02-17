@@ -14,18 +14,20 @@ export const $INLINECOUNT = '$inlinecount';
 export const IF_MATCH_HEADER = 'If-Match';
 export const IF_NONE_MATCH_HEADER = 'If-None-Match';
 export const CONTENT_TYPE = 'Content-Type';
-export const CACHE_CONTROL = 'Cache-Control';
 export const HTTP11 = 'HTTP/1.1';
 export const ACCEPT = 'Accept';
 export const PREFER = 'Prefer';
+export const CACHE_CONTROL = 'Cache-Control';
+export const CACHE_CONTROL_HEADERS = [
+  CACHE_CONTROL,
+  CACHE_CONTROL.toLowerCase(),
+];
 export const ODATA_VERSION = 'OData-Version';
 export const ODATA_VERSION_HEADERS = [
   ODATA_VERSION,
   ODATA_VERSION.toLowerCase(),
   'dataserviceversion',
 ];
-export const ETAG_HEADER = 'ETag';
-export const ETAG_HEADERS = [ETAG_HEADER, ETAG_HEADER.toLowerCase()];
 export const LOCATION_HEADER = 'Location';
 export const LOCATION_HEADERS = [
   LOCATION_HEADER,
@@ -41,6 +43,9 @@ export const PREFERENCE_APPLIED_HEADERS = [
   PREFERENCE_APPLIED,
   PREFERENCE_APPLIED.toLowerCase(),
 ];
+export const ETAG_HEADER = 'ETag';
+export const ETAG_HEADERS = [ETAG_HEADER, ETAG_HEADER.toLowerCase()];
+
 export const RETRY_AFTER = 'Retry-After';
 export const RETRY_AFTER_HEADERS = [RETRY_AFTER, RETRY_AFTER.toLowerCase()];
 
@@ -85,11 +90,13 @@ export const CACHE_KEY_SEPARATOR = ':';
 
 // Models
 export const CID_FIELD_NAME = '_cid';
+export const EVENT_SPLITTER = /\s+/;
 
 // Standard vocabularies for annotating OData services
-// http://docs.oasis-open.org/odata/odata-vocabularies/v4.0/csprd01/odata-vocabularies-v4.0-csprd01.html
+// https://github.com/oasis-tcs/odata-vocabularies/blob/main/vocabularies/Org.OData.Core.V1.md
 
 export const COMPUTED = /.*Computed$/;
 export const OPTIMISTIC_CONCURRENCY = /.*OptimisticConcurrency$/;
 export const DESCRIPTION = /.*Description$/;
 export const LONG_DESCRIPTION = /.*LongDescription$/;
+export const OPTIONARL_PARAMETER = /.*OptionalParameter$/;

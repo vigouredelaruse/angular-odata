@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -43,21 +101,27 @@
 
 
 <ol class="breadcrumb">
-  <li>Classes</li>
-  <li >ODataApiOptions</li>
+  <li class="breadcrumb-item">Classes</li>
+  <li class="breadcrumb-item" >ODataApiOptions</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -76,7 +140,7 @@
             </p>
 
 
-            <section>
+            <section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -106,6 +170,9 @@
                             </li>
                             <li>
                                 <a href="#headers" >headers</a>
+                            </li>
+                            <li>
+                                <a href="#jsonBatchFormat" >jsonBatchFormat</a>
                             </li>
                             <li>
                                 <a href="#nonParenthesisForEmptyParameterFunction" >nonParenthesisForEmptyParameterFunction</a>
@@ -160,7 +227,7 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-constructor">
     <h3 id="constructor">Constructor</h3>
         <table class="table table-sm table-bordered">
             <tbody>
@@ -171,7 +238,7 @@
                 </tr>
                         <tr>
                             <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="89" class="link-to-prism">projects/angular-odata/src/lib/options.ts:89</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="103" class="link-to-prism">projects/angular-odata/src/lib/options.ts:103</a></div>
                             </td>
                         </tr>
 
@@ -209,7 +276,7 @@
         </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-properties">
     
     <h3 id="inputs">
         Properties
@@ -234,7 +301,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="54" class="link-to-prism">projects/angular-odata/src/lib/options.ts:54</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="66" class="link-to-prism">projects/angular-odata/src/lib/options.ts:66</a></div>
                         </td>
                     </tr>
 
@@ -260,13 +327,13 @@
             </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/enumerations.html#QueryOptionNames" target="_self" >QueryOptionNames[]</a></code>
+                        <i>Type : </i>        <code><a href="../miscellaneous/enumerations.html#QueryOption" target="_self" >QueryOption[]</a></code>
 
                     </td>
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="49" class="link-to-prism">projects/angular-odata/src/lib/options.ts:49</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="61" class="link-to-prism">projects/angular-odata/src/lib/options.ts:61</a></div>
                         </td>
                     </tr>
 
@@ -298,10 +365,16 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="88" class="link-to-prism">projects/angular-odata/src/lib/options.ts:88</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">projects/angular-odata/src/lib/options.ts:29</a></div>
                         </td>
                     </tr>
 
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Delete reference by path or by id</p>
+</div>
+                </td>
+            </tr>
 
         </tbody>
     </table>
@@ -329,7 +402,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="60" class="link-to-prism">projects/angular-odata/src/lib/options.ts:60</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="72" class="link-to-prism">projects/angular-odata/src/lib/options.ts:72</a></div>
                         </td>
                     </tr>
 
@@ -355,7 +428,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="33" class="link-to-prism">projects/angular-odata/src/lib/options.ts:33</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">projects/angular-odata/src/lib/options.ts:45</a></div>
                         </td>
                     </tr>
 
@@ -387,13 +460,45 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">projects/angular-odata/src/lib/options.ts:41</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">projects/angular-odata/src/lib/options.ts:53</a></div>
                         </td>
                     </tr>
 
             <tr>
                 <td class="col-md-4">
                     <div class="io-description"><p>Extra headers to be sent in the request</p>
+</div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="jsonBatchFormat"></a>
+                    <span class="name">
+                        <span ><b>jsonBatchFormat</b></span>
+                        <a href="#jsonBatchFormat"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">projects/angular-odata/src/lib/options.ts:41</a></div>
+                        </td>
+                    </tr>
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Use JSON Batch Format</p>
 </div>
                 </td>
             </tr>
@@ -419,10 +524,16 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="89" class="link-to-prism">projects/angular-odata/src/lib/options.ts:89</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="33" class="link-to-prism">projects/angular-odata/src/lib/options.ts:33</a></div>
                         </td>
                     </tr>
 
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>No use parenthesis for empty parameters functions</p>
+</div>
+                </td>
+            </tr>
 
         </tbody>
     </table>
@@ -445,7 +556,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">projects/angular-odata/src/lib/options.ts:37</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="49" class="link-to-prism">projects/angular-odata/src/lib/options.ts:49</a></div>
                         </td>
                     </tr>
 
@@ -478,7 +589,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="70" class="link-to-prism">projects/angular-odata/src/lib/options.ts:70</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="82" class="link-to-prism">projects/angular-odata/src/lib/options.ts:82</a></div>
                         </td>
                     </tr>
 
@@ -530,13 +641,13 @@
             </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../classes/ODataMetadata.html" target="_self" >ODataMetadataType</a></code>
+                        <i>Type : </i>        <code><a href="../miscellaneous/typealiases.html#ODataMetadataType" target="_self" >ODataMetadataType</a></code>
 
                     </td>
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">projects/angular-odata/src/lib/options.ts:29</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">projects/angular-odata/src/lib/options.ts:37</a></div>
                         </td>
                     </tr>
 
@@ -562,7 +673,7 @@
             </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataVersion</a></code>
+                        <i>Type : </i>        <code><a href="../miscellaneous/typealiases.html#ODataVersion" target="_self" >ODataVersion</a></code>
 
                     </td>
                 </tr>
@@ -601,7 +712,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">projects/angular-odata/src/lib/options.ts:45</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">projects/angular-odata/src/lib/options.ts:57</a></div>
                         </td>
                     </tr>
 
@@ -622,7 +733,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-accessors">
     <h3 id="accessors">
         Accessors
     </h3>
@@ -642,7 +753,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="108" class="link-to-prism">projects/angular-odata/src/lib/options.ts:108</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="123" class="link-to-prism">projects/angular-odata/src/lib/options.ts:123</a></div>
                                 </td>
                             </tr>
 
@@ -664,7 +775,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="112" class="link-to-prism">projects/angular-odata/src/lib/options.ts:112</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="134" class="link-to-prism">projects/angular-odata/src/lib/options.ts:134</a></div>
                                 </td>
                             </tr>
 
@@ -674,14 +785,14 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
+    <div class="tab-pane fade  tab-source-code" id="source">
         <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {
   ApiOptions,
   FetchPolicy,
   ODataMetadataType,
   ODataVersion,
   ParserOptions,
-  QueryOptionNames,
+  QueryOption,
 } from &#x27;./types&#x27;;
 import {
   DEFAULT_FETCH_POLICY,
@@ -701,9 +812,21 @@ export class ODataApiOptions implements ApiOptions {
    */
   stringAsEnum: boolean;
   /**
+   * Delete reference by path or by id
+   */
+  deleteRefBy: &#x27;path&#x27; | &#x27;id&#x27;;
+  /**
+   * No use parenthesis for empty parameters functions
+   */
+  nonParenthesisForEmptyParameterFunction: boolean;
+  /**
    * Strip metadata from the response
    */
   stripMetadata: ODataMetadataType;
+  /**
+   * Use JSON Batch Format
+   */
+  jsonBatchFormat: boolean;
   /**
    * Cache fetch policy
    */
@@ -723,7 +846,7 @@ export class ODataApiOptions implements ApiOptions {
   /**
    * Send query options in the request body
    */
-  bodyQueryOptions: QueryOptionNames[];
+  bodyQueryOptions: QueryOption[];
   /**
    * Customize accept header with OData options
    * @link http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_RequestingtheJSONFormat
@@ -761,9 +884,11 @@ export class ODataApiOptions implements ApiOptions {
      * @link http://docs.oasis-open.org/odata/odata/v4.0/errata02/os/complete/part1-protocol/odata-v4.0-errata02-os-part1-protocol-complete.html#_Toc406398237
      */
     includeAnnotations?: string;
+    /**
+     * @link https://devblogs.microsoft.com/odata/extension-omit-null-value-properties-in-asp-net-core-odata/
+     */
+    omitNullValues?: boolean;
   };
-  deleteRefBy: &#x27;path&#x27; | &#x27;id&#x27;;
-  nonParenthesisForEmptyParameterFunction: boolean;
 
   constructor(config: ApiOptions) {
     this.version &#x3D; config.version || DEFAULT_VERSION;
@@ -777,13 +902,21 @@ export class ODataApiOptions implements ApiOptions {
     this.accept &#x3D; config.accept;
     Object.assign(this.etag, config.etag || {});
     this.prefer &#x3D; config.prefer;
-    this.deleteRefBy &#x3D; config.deleteRefBy || &#x27;path&#x27;;
+    this.deleteRefBy &#x3D; config.deleteRefBy ?? &#x27;path&#x27;;
     this.nonParenthesisForEmptyParameterFunction &#x3D;
-      config.nonParenthesisForEmptyParameterFunction || false;
+      config.nonParenthesisForEmptyParameterFunction ?? false;
+    this.jsonBatchFormat &#x3D; config.jsonBatchFormat ?? false;
   }
 
   get parserOptions(): ParserOptions {
-    return { version: this.version, ...this.accept };
+    return {
+      version: this.version,
+      stringAsEnum: this.stringAsEnum,
+      deleteRefBy: this.deleteRefBy,
+      nonParenthesisForEmptyParameterFunction:
+        this.nonParenthesisForEmptyParameterFunction,
+      ...this.accept,
+    };
   }
 
   get helper() {

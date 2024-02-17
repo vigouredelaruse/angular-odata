@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -43,21 +101,27 @@
 
 
 <ol class="breadcrumb">
-  <li>Classes</li>
-  <li >Lambda</li>
+  <li class="breadcrumb-item">Classes</li>
+  <li class="breadcrumb-item" >Lambda</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -76,7 +140,7 @@
             </p>
 
 
-            <section>
+            <section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -93,10 +157,17 @@
                                 <a href="#clone" >clone</a>
                             </li>
                             <li>
+                                    <span class="modifier">Static</span>
+                                <a href="#fromJson" >fromJson</a>
+                            </li>
+                            <li>
                                 <a href="#render" >render</a>
                             </li>
                             <li>
-                                <a href="#toJSON" >toJSON</a>
+                                <a href="#resolve" >resolve</a>
+                            </li>
+                            <li>
+                                <a href="#toJson" >toJson</a>
                             </li>
                         </ul>
                     </td>
@@ -124,7 +195,7 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-constructor">
     <h3 id="constructor">Constructor</h3>
         <table class="table table-sm table-bordered">
             <tbody>
@@ -135,7 +206,7 @@
                 </tr>
                         <tr>
                             <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="446" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:446</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="725" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:725</a></div>
                             </td>
                         </tr>
 
@@ -198,7 +269,7 @@
 </section>
 
 
-            <section>
+            <section data-compodoc="block-methods">
     
     <h3 id="methods">
         Methods
@@ -221,21 +292,98 @@
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="786"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:786</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="486"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:486</a></div>
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/Lambda.html" target="_self" >Lambda&lt;unknown&gt;</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fromJson"></a>
+                    <span class="name">
+                            <span class="modifier">Static</span>
+                        <span ><b>fromJson</b></span>
+                        <a href="#fromJson"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>fromJson(json: literal type)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="747"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:747</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>T</li>
+                            </ul>
+                        </td>
+                    </tr>
+
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/Lambda.html" target="_self" >Lambda&lt;unknown&gt;</a></code>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>json</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                    </div>
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/Lambda.html" target="_self" >Lambda&lt;T&gt;</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -258,52 +406,50 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="466"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:466</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="755"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:755</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -312,35 +458,102 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="toJSON"></a>
+                    <a name="resolve"></a>
                     <span class="name">
-                        <span ><b>toJSON</b></span>
-                        <a href="#toJSON"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>resolve</b></span>
+                        <a href="#resolve"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>toJSON()</code>
+<code>resolve(parser: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="793"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:793</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="457"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:457</a></div>
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>parser</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="toJson"></a>
+                    <span class="name">
+                        <span ><b>toJson</b></span>
+                        <a href="#toJson"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>toJson()</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="736"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:736</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#alias" target="_self" >{ $type: any; op: string; values: {}; alias: string; }</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#alias" target="_self" >{ $type: any; op: string; values: any; alias: string; }</a></code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -351,7 +564,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-accessors">
     <h3 id="accessors">
         Accessors
     </h3>
@@ -371,7 +584,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="453" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:453</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="732" class="link-to-prism">projects/angular-odata/src/lib/resources/query/expressions/syntax.ts:732</a></div>
                                 </td>
                             </tr>
 
@@ -381,57 +594,136 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Objects, Types } from &#x27;../../../utils&#x27;;
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { ODataStructuredTypeFieldParser } from &#x27;../../../schema&#x27;;
+import { Parser, ParserOptions } from &#x27;../../../types&#x27;;
+import { Objects, Types } from &#x27;../../../utils&#x27;;
 import type { QueryCustomType } from &#x27;../builder&#x27;;
 import { normalizeValue } from &#x27;../builder&#x27;;
+import { ComputeExpression } from &#x27;./compute&#x27;;
+import { CountExpression } from &#x27;./count&#x27;;
+import { ExpandExpression } from &#x27;./expand&#x27;;
+import { FilterExpression } from &#x27;./filter&#x27;;
+import { OrderByExpression } from &#x27;./orderby&#x27;;
+import { SearchExpression } from &#x27;./search&#x27;;
+import { SelectExpression } from &#x27;./select&#x27;;
+
+export type Normalize &#x3D; &#x27;all&#x27; | &#x27;right&#x27; | &#x27;left&#x27; | &#x27;none&#x27;;
 
 export interface Renderable {
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;any&gt;;
+    options?: ParserOptions;
   }): string;
   toString(): string;
-  toJSON(): any;
+  toJson(): any;
   clone(): any;
+  resolve(parser: any): any;
 }
 
-export class Field&lt;T extends object&gt; implements ProxyHandler&lt;T&gt; {
-  constructor(public name: string &#x3D; &#x27;&#x27;) {}
+export const FieldFactory &#x3D; &lt;T extends object&gt;(
+  names: (string | Renderable)[] &#x3D; []
+): any &#x3D;&gt;
+  new Proxy({ _names: names } as T, {
+    get(target: T, key: string | symbol) {
+      let names &#x3D; (target as any)[&#x27;_names&#x27;] as (string | Renderable)[];
+      if (key &#x3D;&#x3D;&#x3D; &#x27;render&#x27;) {
+        return ({
+          aliases,
+          escape,
+          prefix,
+          parser,
+          options,
+        }: {
+          aliases?: QueryCustomType[];
+          escape?: boolean;
+          prefix?: string;
+          parser?: Parser&lt;T&gt;;
+          options?: ParserOptions;
+        }) &#x3D;&gt; {
+          let values &#x3D; names.map((n: any) &#x3D;&gt;
+            render(n, { aliases, escape, prefix, parser, options })
+          );
+          if (prefix &amp;&amp; (names.length &#x3D;&#x3D;&#x3D; 0 || typeof names[0] &#x3D;&#x3D;&#x3D; &#x27;string&#x27;)) {
+            values &#x3D; [prefix, ...values];
+          }
+          return values.join(&#x27;/&#x27;);
+        };
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;clone&#x27;) {
+        return () &#x3D;&gt; FieldFactory([...names]);
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;isField&#x27;) {
+        return () &#x3D;&gt; true;
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;toJson&#x27;) {
+        return () &#x3D;&gt; ({
+          $type: &#x27;Field&#x27;,
+          names: names,
+        });
+      } else if (key &#x3D;&#x3D;&#x3D; &#x27;resolve&#x27;) {
+        return (parser: any) &#x3D;&gt;
+          names.reduce(
+            (acc: any, name: string | Renderable) &#x3D;&gt;
+              typeof name &#x3D;&#x3D;&#x3D; &#x27;string&#x27;
+                ? acc?.field(name)
+                : name?.resolve(parser),
+            parser
+          );
+      } else {
+        return FieldFactory([...names, key as string]);
+      }
+    },
 
-  static factory&lt;T extends object&gt;(name: string &#x3D; &#x27;&#x27;) {
-    return new Proxy({ _name: name } as T, new Field&lt;T&gt;());
-  }
+    has(target: T, key: string): any {
+      return (
+        [&#x27;toJson&#x27;, &#x27;isField&#x27;, &#x27;clone&#x27;, &#x27;render&#x27;, &#x27;resolve&#x27;].includes(key) ||
+        key in target
+      );
+    },
+  });
 
-  get(target: T, key: string | symbol): any {
-    let name &#x3D; (target as any)[&#x27;_name&#x27;];
-    if (key &#x3D;&#x3D;&#x3D; &#x27;render&#x27;) {
-      return ({ prefix }: { prefix?: string }) &#x3D;&gt;
-        prefix ? &#x60;${prefix}/${name}&#x60; : name;
-    } else if (key &#x3D;&#x3D;&#x3D; &#x27;clone&#x27;) {
-      return () &#x3D;&gt; Field.factory(name);
-    } else if (key &#x3D;&#x3D;&#x3D; Symbol.toStringTag) {
-      return () &#x3D;&gt; &#x27;Field&#x27;;
-    } else if (key &#x3D;&#x3D;&#x3D; &#x27;toJSON&#x27;) {
-      return () &#x3D;&gt; ({
-        $type: Types.rawType(this),
-        name: name,
-      });
-    } else {
-      name &#x3D; name ? &#x60;${name}/${key as string}&#x60; : key;
-      return new Proxy({ _name: name } as any, this);
+export const RenderableFactory &#x3D; (value: any): Renderable &#x3D;&gt; {
+  if (Types.isPlainObject(value) &amp;&amp; &#x27;$type&#x27; in value) {
+    switch (value.$type) {
+      case &#x27;SelectExpression&#x27;:
+        return SelectExpression.fromJson(value);
+      case &#x27;ExpandExpression&#x27;:
+        return ExpandExpression.fromJson(value);
+      case &#x27;ComputeExpression&#x27;:
+        return ComputeExpression.fromJson(value);
+      case &#x27;FilterExpression&#x27;:
+        return FilterExpression.fromJson(value);
+      case &#x27;OrderByExpression&#x27;:
+        return OrderByExpression.fromJson(value);
+      case &#x27;SearchExpression&#x27;:
+        return SearchExpression.fromJson(value);
+      case &#x27;CountExpression&#x27;:
+        return CountExpression.fromJson(value);
+      case &#x27;Function&#x27;:
+        return Function.fromJson(value);
+      case &#x27;Operator&#x27;:
+        return Operator.fromJson(value);
+      case &#x27;Grouping&#x27;:
+        return Grouping.fromJson(value);
+      case &#x27;Lambda&#x27;:
+        return Lambda.fromJson(value);
+      case &#x27;Type&#x27;:
+        return Type.fromJson(value);
+      case &#x27;Field&#x27;:
+        return FieldFactory(value[&#x27;names&#x27;]);
+      default:
+        return value;
     }
   }
-
-  has(target: T, key: string): any {
-    return [&#x27;toJSON&#x27;, &#x27;clone&#x27;, &#x27;render&#x27;].includes(key) || key in target;
-  }
-}
+  return value;
+};
 
 function applyMixins(derivedCtor: any, constructors: any[]) {
   constructors.forEach((baseCtor) &#x3D;&gt; {
@@ -453,36 +745,75 @@ export function render(
     normalize,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     normalize?: boolean;
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;any&gt;;
+    options?: ParserOptions;
   } &#x3D; {}
 ): string | number | boolean | null {
-  if (typeof value &#x3D;&#x3D;&#x3D; &#x27;function&#x27;) {
-    return render(value(syntax), { aliases, normalize, prefix });
+  if (Types.isFunction(value)) {
+    return render(value(syntax), {
+      aliases,
+      normalize,
+      prefix,
+      parser,
+      options,
+    });
   }
-  if (
-    typeof value &#x3D;&#x3D;&#x3D; &#x27;object&#x27; &amp;&amp;
-    value !&#x3D;&#x3D; null &amp;&amp;
-    value.render !&#x3D;&#x3D; undefined
-  ) {
-    return render(value.render({ aliases, escape, prefix }), {
+  if (Types.isObject(value) &amp;&amp; &#x27;render&#x27; in value) {
+    return render(value.render({ aliases, escape, prefix, parser, options }), {
       aliases,
       normalize,
       escape,
       prefix,
+      parser,
+      options,
     });
   }
   return normalize ? normalizeValue(value, { aliases, escape }) : value;
+}
+
+export function resolve(values: any, parser?: Parser&lt;any&gt;) {
+  if (parser !&#x3D;&#x3D; undefined) {
+    let fields &#x3D; values.filter(
+      (v: any) &#x3D;&gt; Types.isObject(v) &amp;&amp; &#x27;isField&#x27; in v &amp;&amp; v.isField()
+    );
+    if (fields.length &#x3D;&#x3D;&#x3D; 1 &amp;&amp; Types.isObject(parser) &amp;&amp; &#x27;field&#x27; in parser) {
+      return fields[0].resolve(parser);
+    }
+  }
+  return parser;
+}
+
+export function encode(
+  values: any,
+  parser?: Parser&lt;any&gt;,
+  options?: ParserOptions
+) {
+  if (parser !&#x3D;&#x3D; undefined) {
+    return values.map((v: any) &#x3D;&gt; {
+      if (Types.isArray(v)) return encode(v, parser, options);
+      if (Types.isObject(v) || v &#x3D;&#x3D; null) return v;
+      try {
+        return parser.encode(v, options);
+      } catch {
+        return v;
+      }
+    });
+  }
+  return values;
 }
 
 export class Function&lt;T&gt; implements Renderable {
   constructor(
     protected name: string,
     protected values: any[],
-    protected normalize: boolean &#x3D; true,
+    protected normalize: Normalize,
     protected escape: boolean &#x3D; false
   ) {}
 
@@ -490,31 +821,61 @@ export class Function&lt;T&gt; implements Renderable {
     return &#x27;Function&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       name: this.name,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Function&lt;T&gt; {
+    return new Function&lt;T&gt;(
+      json[&#x27;name&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;normalize&#x27;],
+      json[&#x27;escape&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [field, ...values] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, ...values] &#x3D; encode(this.values, parser, options);
 
-    field &#x3D; render(field, { aliases, escape, prefix });
+    left &#x3D; render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27;,
+      options,
+    });
     const params &#x3D; [
-      field,
-      ...values.map((v) &#x3D;&gt;
-        render(v, { aliases, escape, prefix, normalize: this.normalize })
+      left,
+      ...values.map((v: any) &#x3D;&gt;
+        render(v, {
+          aliases,
+          escape,
+          prefix,
+          parser,
+          normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+          options,
+        })
       ),
     ];
     return &#x60;${this.name}(${params.join(&#x27;, &#x27;)})&#x60;;
@@ -528,148 +889,167 @@ export class Function&lt;T&gt; implements Renderable {
       this.escape
     );
   }
+
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class StringAndCollectionFunctions&lt;T&gt; {
-  concat(field: any, value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;concat&#x27;, [field, value], normalize);
+  concat(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;concat&#x27;, [left, right], normalize);
   }
 
-  contains(field: any, value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;contains&#x27;, [field, value], normalize);
+  contains(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;contains&#x27;, [left, right], normalize);
   }
 
-  endsWith(field: any, value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;endswith&#x27;, [field, value], normalize);
+  endsWith(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;endswith&#x27;, [left, right], normalize);
   }
 
-  indexOf(field: any, value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;indexof&#x27;, [field, value], normalize);
+  indexOf(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;indexof&#x27;, [left, right], normalize);
   }
 
-  length(value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;length&#x27;, [value], normalize);
+  length(left: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;length&#x27;, [left], normalize);
   }
 
-  startsWith(field: any, value: any, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;startswith&#x27;, [field, value], normalize);
+  startsWith(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;startswith&#x27;, [left, right], normalize);
   }
 
-  subString(field: any, start: number, length?: number) {
-    let values &#x3D; [field, start];
+  subString(
+    left: any,
+    right: number,
+    length?: number,
+    normalize: Normalize &#x3D; &#x27;none&#x27;
+  ) {
+    let values &#x3D; [left, right];
     if (length !&#x3D;&#x3D; undefined) {
       values.push(length);
     }
-    return new Function&lt;T&gt;(&#x27;substring&#x27;, values);
+    return new Function&lt;T&gt;(&#x27;substring&#x27;, values, normalize);
   }
 }
 
 export class CollectionFunctions&lt;T&gt; {
-  hasSubset(s1: T, s2: any) {
-    return new Function&lt;T&gt;(&#x27;hassubset&#x27;, [s1, s2]);
+  hasSubset(left: T, right: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;hassubset&#x27;, [left, right], normalize);
   }
-  hasSubsequence(s1: T, s2: any) {
-    return new Function&lt;T&gt;(&#x27;hassubsequence&#x27;, [s1, s2]);
+  hasSubsequence(left: T, right: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;hassubsequence&#x27;, [left, right], normalize);
   }
 }
 
 export class StringFunctions&lt;T&gt; {
-  matchesPattern(value: T | string, pattern: string) {
-    return new Function&lt;T&gt;(&#x27;matchesPattern&#x27;, [value, pattern]);
+  matchesPattern(
+    left: any | string,
+    pattern: string,
+    normalize: Normalize &#x3D; &#x27;none&#x27;
+  ) {
+    return new Function&lt;T&gt;(&#x27;matchesPattern&#x27;, [left, pattern], normalize);
   }
-  toLower(value: T) {
-    return new Function&lt;T&gt;(&#x27;tolower&#x27;, [value]);
+  toLower(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;tolower&#x27;, [left], normalize);
   }
-  toUpper(value: T) {
-    return new Function&lt;T&gt;(&#x27;toupper&#x27;, [value]);
+  toUpper(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;toupper&#x27;, [left], normalize);
   }
-  trim(value: T) {
-    return new Function&lt;T&gt;(&#x27;trim&#x27;, [value]);
+  trim(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;trim&#x27;, [left], normalize);
   }
 }
 
 export class DateAndTimeFunctions&lt;T&gt; {
-  date(value: any) {
-    return new Function&lt;T&gt;(&#x27;date&#x27;, [value]);
+  date(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;date&#x27;, [left], normalize);
   }
-  day(value: any) {
-    return new Function&lt;T&gt;(&#x27;day&#x27;, [value]);
+  day(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;day&#x27;, [left], normalize);
   }
-  fractionalseconds(value: any) {
-    return new Function&lt;T&gt;(&#x27;fractionalseconds&#x27;, [value]);
+  fractionalseconds(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;fractionalseconds&#x27;, [left], normalize);
   }
-  hour(value: any) {
-    return new Function&lt;T&gt;(&#x27;hour&#x27;, [value]);
+  hour(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;hour&#x27;, [left], normalize);
   }
-  maxdatetime(value: any) {
-    return new Function&lt;T&gt;(&#x27;maxdatetime&#x27;, [value]);
+  maxdatetime(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;maxdatetime&#x27;, [left], normalize);
   }
-  mindatetime(value: any) {
-    return new Function&lt;T&gt;(&#x27;mindatetime&#x27;, [value]);
+  mindatetime(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;mindatetime&#x27;, [left], normalize);
   }
-  minute(value: any) {
-    return new Function&lt;T&gt;(&#x27;minute&#x27;, [value]);
+  minute(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;minute&#x27;, [left], normalize);
   }
-  month(value: any) {
-    return new Function&lt;T&gt;(&#x27;month&#x27;, [value]);
+  month(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;month&#x27;, [left], normalize);
   }
   now() {
-    return new Function&lt;T&gt;(&#x27;now&#x27;, []);
+    return new Function&lt;T&gt;(&#x27;now&#x27;, [], &#x27;none&#x27;);
   }
-  second(value: any) {
-    return new Function&lt;T&gt;(&#x27;second&#x27;, [value]);
+  second(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;second&#x27;, [left], normalize);
   }
-  time(value: any) {
-    return new Function&lt;T&gt;(&#x27;time&#x27;, [value]);
+  time(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;time&#x27;, [left], normalize);
   }
-  totaloffsetminutes(value: any) {
-    return new Function&lt;T&gt;(&#x27;totaloffsetminutes&#x27;, [value]);
+  totaloffsetminutes(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;totaloffsetminutes&#x27;, [left], normalize);
   }
-  totalseconds(value: any) {
-    return new Function&lt;T&gt;(&#x27;totalseconds&#x27;, [value]);
+  totalseconds(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;totalseconds&#x27;, [left], normalize);
   }
-  year(value: any) {
-    return new Function&lt;T&gt;(&#x27;year&#x27;, [value]);
+  year(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;year&#x27;, [left], normalize);
   }
 }
 
 export class ArithmeticFunctions&lt;T&gt; {
-  ceiling(value: T | string) {
-    return new Function&lt;T&gt;(&#x27;ceiling&#x27;, [value]);
+  ceiling(left: T | string, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;ceiling&#x27;, [left], normalize);
   }
-  floor(value: T | string) {
-    return new Function&lt;T&gt;(&#x27;floor&#x27;, [value]);
+  floor(left: T | string, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;floor&#x27;, [left], normalize);
   }
-  round(value: T | string) {
-    return new Function&lt;T&gt;(&#x27;round&#x27;, [value]);
+  round(left: T | string, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;round&#x27;, [left], normalize);
   }
 }
 
 export class TypeFunctions&lt;T&gt; {
-  cast(value: T | string, type?: string) {
-    return new Function&lt;T&gt;(&#x27;cast&#x27;, [value, type]);
+  cast&lt;N&gt;(left: T | string, type?: string): N {
+    return FieldFactory&lt;Readonly&lt;Required&lt;N&gt;&gt;&gt;([
+      type !&#x3D;&#x3D; undefined
+        ? new Type&lt;T&gt;(&#x27;cast&#x27;, type, left)
+        : new Type&lt;T&gt;(&#x27;cast&#x27;, left as string),
+    ]);
   }
 
-  isof(value: T | string, type?: string) {
-    return new Function&lt;T&gt;(&#x27;isof&#x27;, [value, type]);
+  isof(left: T | string, type?: string) {
+    return type !&#x3D;&#x3D; undefined
+      ? new Type&lt;T&gt;(&#x27;isof&#x27;, type, left)
+      : new Type&lt;T&gt;(&#x27;isof&#x27;, left as string);
   }
 }
 
 export class GeoFunctions&lt;T&gt; {
-  geoDistance(value: T, point: string, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;geo.distance&#x27;, [value, point], normalize);
+  geoDistance(left: T, right: string, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;geo.distance&#x27;, [left, right], normalize);
   }
-  geoIntersects(value: T, polygon: string, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;geo.intersects&#x27;, [value, polygon], normalize);
+  geoIntersects(left: T, right: string, normalize: Normalize &#x3D; &#x27;right&#x27;) {
+    return new Function&lt;T&gt;(&#x27;geo.intersects&#x27;, [left, right], normalize);
   }
-  geoLength(line: T, normalize?: boolean) {
-    return new Function&lt;T&gt;(&#x27;geo.length&#x27;, [line], normalize);
+  geoLength(left: T, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;geo.length&#x27;, [left], normalize);
   }
 }
 
 export class ConditionalFunctions&lt;T&gt; {
-  case(condition: T | string, value: any) {
-    return new Function&lt;T&gt;(&#x27;case&#x27;, [condition, value]);
+  case(left: T | string, right: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Function&lt;T&gt;(&#x27;case&#x27;, [left, right], normalize);
   }
 }
 
@@ -677,34 +1057,56 @@ export class Operator&lt;T&gt; implements Renderable {
   constructor(
     protected op: string,
     protected values: any[],
-    protected normalize: boolean &#x3D; true
+    protected normalize: Normalize
   ) {}
 
   get [Symbol.toStringTag]() {
     return &#x27;Operator&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Operator&lt;T&gt; {
+    return new Operator&lt;T&gt;(
+      json[&#x27;op&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;normalize&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [left, right] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, right] &#x3D; encode(this.values, parser, options);
 
-    left &#x3D; render(left, { aliases, escape, prefix });
+    left &#x3D; render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;left&#x27;,
+      options,
+    });
     if (right !&#x3D;&#x3D; undefined) {
       right &#x3D; Array.isArray(right)
         ? &#x60;(${right
@@ -713,7 +1115,10 @@ export class Operator&lt;T&gt; implements Renderable {
                 aliases,
                 escape,
                 prefix,
-                normalize: this.normalize,
+                parser,
+                normalize:
+                  this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+                options,
               })
             )
             .join(&#x27;,&#x27;)})&#x60;
@@ -721,7 +1126,9 @@ export class Operator&lt;T&gt; implements Renderable {
             aliases,
             escape,
             prefix,
-            normalize: this.normalize,
+            parser,
+            normalize: this.normalize &#x3D;&#x3D;&#x3D; &#x27;all&#x27; || this.normalize &#x3D;&#x3D;&#x3D; &#x27;right&#x27;,
+            options,
           });
       return &#x60;${left} ${this.op} ${right}&#x60;;
     }
@@ -735,63 +1142,66 @@ export class Operator&lt;T&gt; implements Renderable {
       this.normalize
     );
   }
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class LogicalOperators&lt;T&gt; {
-  eq(left: any, right: any, normalize?: boolean) {
+  eq(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;eq&#x27;, [left, right], normalize);
   }
-  ne(left: any, right: any, normalize?: boolean) {
+  ne(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;ne&#x27;, [left, right], normalize);
   }
-  gt(left: any, right: any, normalize?: boolean) {
+  gt(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;gt&#x27;, [left, right], normalize);
   }
-  ge(left: any, right: any, normalize?: boolean) {
+  ge(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;ge&#x27;, [left, right], normalize);
   }
-  lt(left: any, right: any, normalize?: boolean) {
+  lt(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;lt&#x27;, [left, right], normalize);
   }
-  le(left: any, right: any, normalize?: boolean) {
+  le(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;le&#x27;, [left, right], normalize);
   }
   /*
-  and(left: any, right: any, normalize?: boolean) {
+  and(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;and&#x27;, [left, right], normalize);
   }
-  or(left: any, right: any, normalize?: boolean) {
+  or(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;or&#x27;, [left, right], normalize);
   }
   */
-  not(value: any, normalize?: boolean) {
-    return new Operator&lt;T&gt;(&#x27;not&#x27;, [value], normalize);
+  not(left: any, normalize: Normalize &#x3D; &#x27;none&#x27;) {
+    return new Operator&lt;T&gt;(&#x27;not&#x27;, [left], normalize);
   }
-  has(left: any, right: any, normalize?: boolean) {
+  has(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;has&#x27;, [left, right], normalize);
   }
-  in(left: any, right: any, normalize?: boolean) {
+  in(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;in&#x27;, [left, right], normalize);
   }
 }
 
 export class ArithmeticOperators&lt;T&gt; {
-  add(left: any, right: any, normalize?: boolean) {
+  add(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator&lt;T&gt;(&#x27;add&#x27;, [left, right], normalize);
   }
-  sub(left: any, right: any, normalize?: boolean) {
+  sub(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;sub&#x27;, [left, right], normalize);
   }
-  mul(left: any, right: any, normalize?: boolean) {
+  mul(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;mul&#x27;, [left, right], normalize);
   }
-  div(left: any, right: any, normalize?: boolean) {
+  div(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;div&#x27;, [left, right], normalize);
   }
-  mod(left: any, right: any, normalize?: boolean) {
+  mod(left: any, right: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;mod&#x27;, [left, right], normalize);
   }
-  neg(value: any, normalize?: boolean) {
+  neg(value: any, normalize: Normalize &#x3D; &#x27;right&#x27;) {
     return new Operator(&#x27;-&#x27;, [value], normalize);
   }
 }
@@ -803,27 +1213,109 @@ export class Grouping&lt;T&gt; implements Renderable {
     return &#x27;Grouping&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
-      group: this.group.toJSON(),
+      group: this.group.toJson(),
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Grouping&lt;T&gt; {
+    return new Grouping&lt;T&gt;(json[&#x27;group&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)));
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    return &#x60;(${render(this.group, { aliases, escape, prefix })})&#x60;;
+    return &#x60;(${render(this.group, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })})&#x60;;
   }
 
   clone() {
     return new Grouping(Objects.clone(this.group));
+  }
+  resolve(parser: any) {
+    return parser;
+  }
+}
+
+export class Type&lt;T&gt; implements Renderable {
+  constructor(
+    protected name: string,
+    protected type: string,
+    protected value?: any
+  ) {}
+  get [Symbol.toStringTag]() {
+    return &#x27;Type&#x27;;
+  }
+
+  toJson() {
+    return {
+      $type: Types.rawType(this),
+      name: this.name,
+      type: this.type,
+      value: this.value,
+    };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Type&lt;T&gt; {
+    return new Type&lt;T&gt;(
+      json[&#x27;name&#x27;],
+      json[&#x27;type&#x27;],
+      RenderableFactory(json[&#x27;value&#x27;])
+    );
+  }
+
+  render({
+    aliases,
+    escape,
+    prefix,
+    parser,
+    options,
+  }: {
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
+  }): string {
+    if (this.value) {
+      parser &#x3D; resolve([this.value], parser);
+      let [left, right] &#x3D; encode([this.value], parser, options);
+
+      left &#x3D; render(left, { aliases, escape, prefix, parser, options });
+      return &#x60;${this.name}(${left}, &#x27;${this.type}&#x27;)&#x60;;
+    } else {
+      return &#x60;${this.name}(&#x27;${this.type}&#x27;)&#x60;;
+    }
+  }
+
+  clone() {
+    return new Type(this.name, this.type, Objects.clone(this.value));
+  }
+
+  resolve(parser: any) {
+    parser &#x3D;
+      parser instanceof ODataStructuredTypeFieldParser &amp;&amp;
+      parser.isStructuredType()
+        ? parser.structured()
+        : parser;
+    return parser?.findChildParser((p: any) &#x3D;&gt; p.isTypeOf(this.type));
   }
 }
 
@@ -838,33 +1330,54 @@ export class Lambda&lt;T&gt; implements Renderable {
     return &#x27;Lambda&#x27;;
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) &#x3D;&gt;
+        Types.isObject(v) &amp;&amp; &#x27;toJson&#x27; in v ? v.toJson() : v
+      ),
       alias: this.alias,
     };
+  }
+
+  static fromJson&lt;T&gt;(json: { [name: string]: any }): Lambda&lt;T&gt; {
+    return new Lambda&lt;T&gt;(
+      json[&#x27;op&#x27;],
+      json[&#x27;values&#x27;].map((v: any) &#x3D;&gt; RenderableFactory(v)),
+      json[&#x27;alias&#x27;]
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser&lt;T&gt;;
+    options?: ParserOptions;
   }): string {
-    let [left, right] &#x3D; this.values;
+    parser &#x3D; resolve(this.values, parser);
+    let [left, right] &#x3D; encode(this.values, parser, options);
 
-    left &#x3D; render(left, { aliases, escape, prefix });
-    let alias &#x3D; this.alias || left.split(&#x27;/&#x27;).pop().toLowerCase()[0];
-    return &#x60;${left}/${this.op}(${alias}:${render(right, {
-      aliases,
-      escape,
-      prefix: alias,
-    })})&#x60;;
+    left &#x3D; render(left, { aliases, escape, prefix, parser });
+    if (right) {
+      let alias &#x3D; this.alias || left.split(&#x27;/&#x27;).pop().toLowerCase()[0];
+      return &#x60;${left}/${this.op}(${alias}:${render(right, {
+        aliases,
+        escape,
+        prefix: alias,
+        options,
+        parser,
+      })})&#x60;;
+    } else {
+      return &#x60;${left}/${this.op}()&#x60;;
+    }
   }
 
   clone() {
@@ -874,15 +1387,18 @@ export class Lambda&lt;T&gt; implements Renderable {
       this.alias
     );
   }
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class LambdaOperators&lt;T&gt; {
-  any(field: T, value: any, alias?: string) {
-    return new Lambda(&#x27;any&#x27;, [field, value], alias);
+  any(left: T, right: any, alias?: string) {
+    return new Lambda(&#x27;any&#x27;, [left, right], alias);
   }
 
-  all(field: T, value: any, alias?: string) {
-    return new Lambda(&#x27;all&#x27;, [field, value], alias);
+  all(left: T, right: any, alias?: string) {
+    return new Lambda(&#x27;all&#x27;, [left, right], alias);
   }
 }
 

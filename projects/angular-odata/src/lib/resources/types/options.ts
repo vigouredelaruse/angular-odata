@@ -1,13 +1,24 @@
-import { HttpHeaders, HttpParams } from '@angular/common/http';
-import { FetchPolicy } from '../../types';
+import { HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
+import { FetchPolicy, ParserOptions } from '../../types';
 import { ODataQueryArguments } from '../query';
 
 export type ODataOptions = {
+  etag?: string;
+  context?: HttpContext;
   headers?: HttpHeaders | { [header: string]: string | string[] };
-  params?: HttpParams | { [param: string]: string | string[] };
+  params?:
+    | HttpParams
+    | {
+        [param: string]:
+          | string
+          | number
+          | boolean
+          | ReadonlyArray<string | number | boolean>;
+      };
   reportProgress?: boolean;
   withCredentials?: boolean;
   fetchPolicy?: FetchPolicy;
+  parserOptions?: ParserOptions;
 };
 
 export type ODataEntityOptions = ODataOptions & { responseType?: 'entity' };
@@ -16,8 +27,6 @@ export type ODataEntitiesOptions = ODataOptions & {
   withCount?: boolean;
 };
 export type ODataPropertyOptions = ODataOptions & { responseType?: 'property' };
-export type ODataNoneOptions = ODataOptions & { responseType?: 'none' };
-
 export type ODataQueryArgumentsOptions<T> = ODataOptions &
   ODataQueryArguments<T>;
 export type ODataActionOptions<T> = ODataQueryArgumentsOptions<T>;

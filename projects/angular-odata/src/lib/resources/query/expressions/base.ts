@@ -1,3 +1,5 @@
+import { Parser, ParserOptions } from '../../../types';
+import { Types } from '../../../utils';
 import type { QueryCustomType } from '../builder';
 import { Renderable } from './syntax';
 
@@ -19,10 +21,14 @@ export abstract class Expression<T> implements Renderable {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string;
 
   abstract clone(): Expression<T>;
@@ -35,9 +41,13 @@ export abstract class Expression<T> implements Renderable {
     return this._children.length;
   }
 
-  toJSON() {
+  toJson() {
     return {
-      children: this._children.map((c) => c.toJSON()),
+      $type: Types.rawType(this),
+      children: this._children.map((c) => c.toJson()),
     };
+  }
+  resolve(parser: any) {
+    return parser;
   }
 }

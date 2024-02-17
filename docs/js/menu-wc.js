@@ -52,8 +52,8 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                 </li>
                     <li class="chapter modules">
                         <a data-type="chapter-link" href="modules.html">
-                            <div class="menu-toggler linked" data-toggle="collapse" ${ isNormalMode ?
-                                'data-target="#modules-links"' : 'data-target="#xs-modules-links"' }>
+                            <div class="menu-toggler linked" data-bs-toggle="collapse" ${ isNormalMode ?
+                                'data-bs-target="#modules-links"' : 'data-bs-target="#xs-modules-links"' }>
                                 <span class="icon ion-ios-archive"></span>
                                 <span class="link-name">Modules</span>
                                 <span class="icon ion-ios-arrow-down"></span>
@@ -63,14 +63,14 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             <li class="link">
                                 <a href="modules/ODataModule.html" data-type="entity-link" >ODataModule</a>
                                 <li class="chapter inner">
-                                    <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ?
-                                        'data-target="#injectables-links-module-ODataModule-8894340f0aa30aceeba5e20490af7cac3c99165819b2d3e3bb2cecbfdbc0625a2352053ca35316b1da4c9ccb871a763ecdec4b160307a5e7aff25c00e4c1d866"' : 'data-target="#xs-injectables-links-module-ODataModule-8894340f0aa30aceeba5e20490af7cac3c99165819b2d3e3bb2cecbfdbc0625a2352053ca35316b1da4c9ccb871a763ecdec4b160307a5e7aff25c00e4c1d866"' }>
+                                    <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ?
+                                        'data-bs-target="#injectables-links-module-ODataModule-075db85ae0df7c9785b9d717a7d6aa8a451986e9f405f30b1c85e22248f82715e73e78687a214b49a17688780e62ae2c21e2ab2db091e03f132bbe2813a51952"' : 'data-bs-target="#xs-injectables-links-module-ODataModule-075db85ae0df7c9785b9d717a7d6aa8a451986e9f405f30b1c85e22248f82715e73e78687a214b49a17688780e62ae2c21e2ab2db091e03f132bbe2813a51952"' }>
                                         <span class="icon ion-md-arrow-round-down"></span>
                                         <span>Injectables</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="injectables-links-module-ODataModule-8894340f0aa30aceeba5e20490af7cac3c99165819b2d3e3bb2cecbfdbc0625a2352053ca35316b1da4c9ccb871a763ecdec4b160307a5e7aff25c00e4c1d866"' :
-                                        'id="xs-injectables-links-module-ODataModule-8894340f0aa30aceeba5e20490af7cac3c99165819b2d3e3bb2cecbfdbc0625a2352053ca35316b1da4c9ccb871a763ecdec4b160307a5e7aff25c00e4c1d866"' }>
+                                    <ul class="links collapse" ${ isNormalMode ? 'id="injectables-links-module-ODataModule-075db85ae0df7c9785b9d717a7d6aa8a451986e9f405f30b1c85e22248f82715e73e78687a214b49a17688780e62ae2c21e2ab2db091e03f132bbe2813a51952"' :
+                                        'id="xs-injectables-links-module-ODataModule-075db85ae0df7c9785b9d717a7d6aa8a451986e9f405f30b1c85e22248f82715e73e78687a214b49a17688780e62ae2c21e2ab2db091e03f132bbe2813a51952"' }>
                                         <li class="link">
                                             <a href="injectables/ODataClient.html" data-type="entity-link" data-context="sub-entity" data-context-id="modules" >ODataClient</a>
                                         </li>
@@ -83,8 +83,8 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                 </ul>
                 </li>
                     <li class="chapter">
-                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#classes-links"' :
-                            'data-target="#xs-classes-links"' }>
+                        <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ? 'data-bs-target="#classes-links"' :
+                            'data-bs-target="#xs-classes-links"' }>
                             <span class="icon ion-ios-paper"></span>
                             <span>Classes</span>
                             <span class="icon ion-ios-arrow-down"></span>
@@ -104,6 +104,12 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             </li>
                             <li class="link">
                                 <a href="classes/ConditionalFunctions.html" data-type="entity-link" >ConditionalFunctions</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/CountExpression.html" data-type="entity-link" >CountExpression</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/CountField.html" data-type="entity-link" >CountField</a>
                             </li>
                             <li class="link">
                                 <a href="classes/CsdlAction.html" data-type="entity-link" >CsdlAction</a>
@@ -214,9 +220,6 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="classes/Field.html" data-type="entity-link" >Field</a>
                             </li>
                             <li class="link">
-                                <a href="classes/Field-1.html" data-type="entity-link" >Field</a>
-                            </li>
-                            <li class="link">
                                 <a href="classes/FilterExpression.html" data-type="entity-link" >FilterExpression</a>
                             </li>
                             <li class="link">
@@ -275,6 +278,15 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             </li>
                             <li class="link">
                                 <a href="classes/ODataCollection.html" data-type="entity-link" >ODataCollection</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/ODataConfigAsyncLoader.html" data-type="entity-link" >ODataConfigAsyncLoader</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/ODataConfigLoader.html" data-type="entity-link" >ODataConfigLoader</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/ODataConfigSyncLoader.html" data-type="entity-link" >ODataConfigSyncLoader</a>
                             </li>
                             <li class="link">
                                 <a href="classes/ODataCountResource.html" data-type="entity-link" >ODataCountResource</a>
@@ -337,7 +349,13 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="classes/ODataModel.html" data-type="entity-link" >ODataModel</a>
                             </li>
                             <li class="link">
+                                <a href="classes/ODataModelAttribute.html" data-type="entity-link" >ODataModelAttribute</a>
+                            </li>
+                            <li class="link">
                                 <a href="classes/ODataModelEvent.html" data-type="entity-link" >ODataModelEvent</a>
+                            </li>
+                            <li class="link">
+                                <a href="classes/ODataModelEventEmitter.html" data-type="entity-link" >ODataModelEventEmitter</a>
                             </li>
                             <li class="link">
                                 <a href="classes/ODataModelField.html" data-type="entity-link" >ODataModelField</a>
@@ -445,13 +463,16 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="classes/StringFunctions.html" data-type="entity-link" >StringFunctions</a>
                             </li>
                             <li class="link">
+                                <a href="classes/Type.html" data-type="entity-link" >Type</a>
+                            </li>
+                            <li class="link">
                                 <a href="classes/TypeFunctions.html" data-type="entity-link" >TypeFunctions</a>
                             </li>
                         </ul>
                     </li>
                         <li class="chapter">
-                            <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#injectables-links"' :
-                                'data-target="#xs-injectables-links"' }>
+                            <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ? 'data-bs-target="#injectables-links"' :
+                                'data-bs-target="#xs-injectables-links"' }>
                                 <span class="icon ion-md-arrow-round-down"></span>
                                 <span>Injectables</span>
                                 <span class="icon ion-ios-arrow-down"></span>
@@ -463,8 +484,8 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             </ul>
                         </li>
                     <li class="chapter">
-                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#interfaces-links"' :
-                            'data-target="#xs-interfaces-links"' }>
+                        <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ? 'data-bs-target="#interfaces-links"' :
+                            'data-bs-target="#xs-interfaces-links"' }>
                             <span class="icon ion-md-information-circle-outline"></span>
                             <span>Interfaces</span>
                             <span class="icon ion-ios-arrow-down"></span>
@@ -477,6 +498,9 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                 <a href="interfaces/Cache.html" data-type="entity-link" >Cache</a>
                             </li>
                             <li class="link">
+                                <a href="interfaces/FieldParser.html" data-type="entity-link" >FieldParser</a>
+                            </li>
+                            <li class="link">
                                 <a href="interfaces/ODataCacheEntry.html" data-type="entity-link" >ODataCacheEntry</a>
                             </li>
                             <li class="link">
@@ -487,6 +511,9 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             </li>
                             <li class="link">
                                 <a href="interfaces/ParserOptions.html" data-type="entity-link" >ParserOptions</a>
+                            </li>
+                            <li class="link">
+                                <a href="interfaces/PassedInitialConfig.html" data-type="entity-link" >PassedInitialConfig</a>
                             </li>
                             <li class="link">
                                 <a href="interfaces/Renderable.html" data-type="entity-link" >Renderable</a>
@@ -503,8 +530,8 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                         </ul>
                     </li>
                     <li class="chapter">
-                        <div class="simple menu-toggler" data-toggle="collapse" ${ isNormalMode ? 'data-target="#miscellaneous-links"'
-                            : 'data-target="#xs-miscellaneous-links"' }>
+                        <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ? 'data-bs-target="#miscellaneous-links"'
+                            : 'data-bs-target="#xs-miscellaneous-links"' }>
                             <span class="icon ion-ios-cube"></span>
                             <span>Miscellaneous</span>
                             <span class="icon ion-ios-arrow-down"></span>
@@ -526,7 +553,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                     </li>
                     <li class="divider"></li>
                     <li class="copyright">
-                        Documentation generated using <a href="https://compodoc.app/" target="_blank">
+                        Documentation generated using <a href="https://compodoc.app/" target="_blank" rel="noopener noreferrer">
                             <img data-src="images/compodoc-vectorise.png" class="img-responsive" data-type="compodoc-logo">
                         </a>
                     </li>

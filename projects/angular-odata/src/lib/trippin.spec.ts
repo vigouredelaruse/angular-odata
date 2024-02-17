@@ -9,15 +9,27 @@ import {
   StructuredTypeConfig,
 } from './types';
 
+export const CONFIG_NAME = 'TripPin';
 export const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW/';
 export const NAMESPACE = 'TripPin';
 
 //#region Enum
+export enum FlagEnums {
+  Flag1 = 1 << 0,
+  Flag2 = 1 << 1,
+  Flag4 = 1 << 2,
+}
 export enum PersonGender {
   Male = 0,
   Female = 1,
   Unknown = 2,
 }
+export const FlagEnumsConfig = {
+  name: 'FlagEnums',
+  flags: true,
+  members: FlagEnums,
+  fields: {},
+} as EnumTypeConfig<FlagEnums>;
 export const PersonGenderConfig = {
   name: 'PersonGender',
   members: PersonGender,
@@ -48,6 +60,58 @@ export const PhotoConfig = {
   },
 } as StructuredTypeConfig<Photo>;
 
+export interface Airline {
+  AirlineCode: string;
+  Name: string;
+}
+
+export const AirlineEntityConfig = {
+  name: 'Airline',
+  keys: [{ name: 'AirlineCode' }],
+  fields: {
+    AirlineCode: {
+      type: 'Edm.String',
+      nullable: false,
+      annotations: [
+        {
+          term: 'Org.OData.Core.V1.Permissions',
+          permissions: ['Org.OData.Core.V1.Permission/Read'],
+        },
+      ],
+    },
+    Name: { type: 'Edm.String', nullable: false },
+  },
+} as StructuredTypeConfig<Airline>;
+
+export interface Airport {
+  IcaoCode: string;
+  Name: string;
+  IataCode: string;
+}
+
+export const AirportEntityConfig = {
+  name: 'Airport',
+  keys: [{ name: 'IcaoCode' }],
+  fields: {
+    IcaoCode: {
+      type: 'Edm.String',
+      nullable: false,
+      annotations: [
+        {
+          term: 'Org.OData.Core.V1.Permissions',
+          permissions: ['Org.OData.Core.V1.Permission/Read'],
+        },
+      ],
+    },
+    Name: { type: 'Edm.String', nullable: false },
+    IataCode: {
+      type: 'Edm.String',
+      nullable: false,
+      annotations: [{ term: 'Org.OData.Core.V1.Immutable', bool: true }],
+    },
+  },
+} as StructuredTypeConfig<Airport>;
+
 export interface PlanItem {
   PlanItemId: number;
   ConfirmationCode?: string;
@@ -59,7 +123,7 @@ export interface PlanItem {
 }
 export const PlanItemConfig = {
   name: 'PlanItem',
-  annotations: [],
+  keys: [{ name: 'PlanItemId' }],
   fields: {
     PlanItemId: {
       type: 'Edm.Int64',
@@ -71,12 +135,44 @@ export const PlanItemConfig = {
         },
       ],
     },
-    ConfirmationCode: { type: 'Edm.String' },
-    StartsAt: { type: 'Edm.DateTimeOffset' },
+    ConfirmationCode: { type: 'Edm.String', default: '0' },
+    StartsAt: {
+      type: 'Edm.DateTimeOffset',
+      default: '2022-08-05T15:50:12.052Z',
+    },
     EndsAt: { type: 'Edm.DateTimeOffset' },
-    Duration: { type: 'Edm.String' },
+    Duration: { type: 'Edm.String', default: 'M' },
   },
 } as StructuredTypeConfig<PlanItem>;
+export interface PublicTransportation extends PlanItem {
+  SeatNumber?: string;
+}
+
+export const PublicTransportationEntityConfig = {
+  name: 'PublicTransportation',
+  base: `${NAMESPACE}.PlanItem`,
+  fields: {
+    SeatNumber: { type: 'Edm.String', default: '0' },
+  },
+} as StructuredTypeConfig<PublicTransportation>;
+
+export interface Flight extends PublicTransportation {
+  FlightNumber: string;
+  From?: Airport;
+  To?: Airport;
+  Airline?: Airline;
+}
+
+export const FlightEntityConfig = {
+  name: 'Flight',
+  base: `${NAMESPACE}.PublicTransportation`,
+  fields: {
+    FlightNumber: { type: 'Edm.String', nullable: false, default: '0' },
+    From: { type: `${NAMESPACE}.Airport`, navigation: true },
+    To: { type: `${NAMESPACE}.Airport`, navigation: true },
+    Airline: { type: `${NAMESPACE}.Airline`, navigation: true },
+  },
+} as StructuredTypeConfig<Flight>;
 
 export interface Trip {
   TripId: number;
@@ -186,6 +282,7 @@ export const PeopleConfig = {
 //#endregion
 
 export const TripPinConfig = {
+  name: CONFIG_NAME,
   serviceRootUrl: SERVICE_ROOT,
   options: {
     stringAsEnum: true,
@@ -195,8 +292,17 @@ export const TripPinConfig = {
   schemas: [
     {
       namespace: `${NAMESPACE}`,
-      enums: [PersonGenderConfig],
-      entities: [PhotoConfig, PersonConfig, PlanItemConfig, TripConfig],
+      enums: [PersonGenderConfig, FlagEnumsConfig],
+      entities: [
+        PhotoConfig,
+        PersonConfig,
+        PlanItemConfig,
+        TripConfig,
+        PublicTransportationEntityConfig,
+        FlightEntityConfig,
+        AirlineEntityConfig,
+        AirportEntityConfig,
+      ],
       containers: [
         {
           entitySets: [PeopleConfig],

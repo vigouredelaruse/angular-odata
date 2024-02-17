@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -43,21 +101,27 @@
 
 
 <ol class="breadcrumb">
-  <li>Classes</li>
-  <li >ODataAnnotations</li>
+  <li class="breadcrumb-item">Classes</li>
+  <li class="breadcrumb-item" >ODataAnnotations</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -70,7 +134,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -109,6 +173,13 @@
                                     <span class="modifier">Abstract</span>
                                 <a href="#data" >data</a>
                             </li>
+                            <li>
+                                    <span class="modifier">Abstract</span>
+                                <a href="#union" >union</a>
+                            </li>
+                            <li>
+                                <a href="#update" >update</a>
+                            </li>
                         </ul>
                     </td>
                 </tr>
@@ -138,13 +209,13 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-constructor">
     <h3 id="constructor">Constructor</h3>
         <table class="table table-sm table-bordered">
             <tbody>
                 <tr>
                     <td class="col-md-4">
-<code>constructor(helper: <a href="../interfaces/ODataVersionHelper.html" target="_self">ODataVersionHelper</a>, annotations: Map<string | any>, context?: <a href="../objects/OData.html" target="_self">ODataContext</a>)</code>
+<code>constructor(helper: <a href="../interfaces/ODataVersionHelper.html" target="_self">ODataVersionHelper</a>, annotations: Map<string | any>, context?: <a href="../undefineds/ODataContext.html" target="_self">ODataContext</a>)</code>
                     </td>
                 </tr>
                         <tr>
@@ -194,7 +265,7 @@
                                                         <td>context</td>
                                                   
                                                         <td>
-                                                                        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataContext</a></code>
+                                                                        <code><a href="../miscellaneous/typealiases.html#ODataContext" target="_self" >ODataContext</a></code>
                                                         </td>
                                                   
                                                     <td>
@@ -211,7 +282,7 @@
         </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-properties">
     
     <h3 id="inputs">
         Properties
@@ -245,7 +316,7 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-methods">
     
     <h3 id="methods">
         Methods
@@ -263,78 +334,68 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>attributes(data: literal type, metadata: <a href="../classes/ODataMetadata.html" target="_self">ODataMetadataType</a>)</code>
+<code>attributes(data: literal type, metadata: <a href="../undefineds/ODataMetadataType.html" target="_self">ODataMetadataType</a>)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="12"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:12</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="12"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:12</a></div>
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="col-md-4">
-                    <b>Type parameters :</b>
-                    <ul class="type-parameters">
-                        <li>T</li>
-                    </ul>
-                </td>
-            </tr>
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>data</td>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>data</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
-
-
-                                </tr>
-                                <tr>
-                                    <td>metadata</td>
-                                    <td>
-                                                <code><a href="../classes/ODataMetadata.html" target="_self" >ODataMetadataType</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>T</code>
+                                        </tr>
+                                        <tr>
+                                                <td>metadata</td>
+                                            <td>
+                                                            <code><a href="../miscellaneous/typealiases.html#ODataMetadataType" target="_self" >ODataMetadataType</a></code>
+                                            </td>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>Partial&lt;T&gt;</code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -345,7 +406,7 @@
                 <td class="col-md-4">
                     <a name="clone"></a>
                     <span class="name">
-                        <span class="modifier">Abstract</span>
+                            <span class="modifier">Abstract</span>
                         <span ><b>clone</b></span>
                         <a href="#clone"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -353,27 +414,27 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>clone()</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="25"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:25</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="36"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:36</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/ODataAnnotations.html" target="_self" >ODataAnnotations</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataAnnotations&lt;any&gt;</a></code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -384,7 +445,7 @@
                 <td class="col-md-4">
                     <a name="data"></a>
                     <span class="name">
-                        <span class="modifier">Abstract</span>
+                            <span class="modifier">Abstract</span>
                         <span ><b>data</b></span>
                         <a href="#data"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -392,59 +453,193 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>data(data: literal type)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="37"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:37</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="26"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:26</a></div>
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>data</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>literal type</code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="union"></a>
+                    <span class="name">
+                            <span class="modifier">Abstract</span>
+                        <span ><b>union</b></span>
+                        <a href="#union"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>union(other: <a href="../objects/OData.html" target="_self">ODataAnnotations&lt;any&gt;</a>)</code>
                 </td>
             </tr>
 
 
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="35"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:35</a></div>
+                        </td>
+                    </tr>
+
+
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>data</td>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>other</td>
+                                            <td>
+                                                            <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataAnnotations&lt;any&gt;</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>literal type</code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataAnnotations&lt;any&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="update"></a>
+                    <span class="name">
+                        <span ><b>update</b></span>
+                        <a href="#update"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>update(data: literal type)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="19"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:19</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>data</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -455,7 +650,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-accessors">
     <h3 id="accessors">
         Accessors
     </h3>
@@ -475,7 +670,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="16" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:16</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="26" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:26</a></div>
                                 </td>
                             </tr>
 
@@ -497,7 +692,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="20" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:20</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/annotations.ts:30</a></div>
                                 </td>
                             </tr>
 
@@ -507,20 +702,30 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
+    <div class="tab-pane fade  tab-source-code" id="source">
         <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { ODataContext, ODataVersionHelper } from &#x27;../../helper&#x27;;
 
 import { ODataMetadataType } from &#x27;../../types&#x27;;
 
-export abstract class ODataAnnotations {
+export abstract class ODataAnnotations&lt;T&gt; {
   constructor(
     public helper: ODataVersionHelper,
     protected annotations: Map&lt;string, any&gt; &#x3D; new Map&lt;string, any&gt;(),
-    protected context?: ODataContext
+    protected context?: ODataContext,
   ) {}
 
-  attributes&lt;T&gt;(data: { [key: string]: any }, metadata: ODataMetadataType): T {
-    return this.helper.attributes(data, metadata) as T;
+  attributes(
+    data: { [name: string]: any },
+    metadata: ODataMetadataType,
+  ): Partial&lt;T&gt; {
+    return this.helper.attributes(data, metadata) as Partial&lt;T&gt;;
+  }
+
+  update(data: { [name: string]: any }) {
+    this.annotations &#x3D; new Map&lt;string, any&gt;([
+      ...this.annotations,
+      ...this.helper.annotations(data),
+    ]);
   }
 
   get entitySet() {
@@ -532,34 +737,51 @@ export abstract class ODataAnnotations {
   }
 
   // Method
-  abstract clone(): ODataAnnotations;
-  abstract data(data: { [key: string]: any }): { [key: string]: any };
+  abstract union(other: ODataAnnotations&lt;any&gt;): ODataAnnotations&lt;any&gt;;
+  abstract clone(): ODataAnnotations&lt;any&gt;;
+  abstract data(data: { [name: string]: any }): { [name: string]: any };
 }
 
-export class ODataPropertyAnnotations extends ODataAnnotations {
-  clone(): ODataPropertyAnnotations {
-    return new ODataPropertyAnnotations(
+export class ODataPropertyAnnotations&lt;T&gt; extends ODataAnnotations&lt;T&gt; {
+  union(other: ODataPropertyAnnotations&lt;any&gt;): ODataPropertyAnnotations&lt;any&gt; {
+    return new ODataPropertyAnnotations&lt;any&gt;(
       this.helper,
-      new Map(this.annotations),
-      this.context
+      new Map&lt;string, any&gt;([...this.annotations, ...other.annotations]),
+      Object.assign({}, this.context, other.context),
     );
   }
 
-  data(data: { [key: string]: any }) {
+  clone(): ODataPropertyAnnotations&lt;any&gt; {
+    return new ODataPropertyAnnotations&lt;any&gt;(
+      this.helper,
+      new Map(this.annotations),
+      this.context,
+    );
+  }
+
+  data(data: { [name: string]: any }) {
     return this.helper.property(data);
   }
 }
 
-export class ODataEntityAnnotations extends ODataAnnotations {
-  clone(): ODataEntityAnnotations {
-    return new ODataEntityAnnotations(
+export class ODataEntityAnnotations&lt;T&gt; extends ODataAnnotations&lt;T&gt; {
+  union(other: ODataEntityAnnotations&lt;any&gt;): ODataEntityAnnotations&lt;any&gt; {
+    return new ODataEntityAnnotations&lt;any&gt;(
       this.helper,
-      new Map(this.annotations),
-      this.context
+      new Map&lt;string, any&gt;([...this.annotations, ...other.annotations]),
+      Object.assign({}, this.context, other.context),
     );
   }
 
-  data(data: { [key: string]: any }) {
+  clone(): ODataEntityAnnotations&lt;any&gt; {
+    return new ODataEntityAnnotations&lt;any&gt;(
+      this.helper,
+      new Map(this.annotations),
+      this.context,
+    );
+  }
+
+  data(data: { [name: string]: any }) {
     return this.helper.entity(data);
   }
 
@@ -599,19 +821,27 @@ export class ODataEntityAnnotations extends ODataAnnotations {
     return this.helper.mediaContentType(this.annotations);
   }
 
-  private _properties?: Map&lt;string, Map&lt;string, any&gt;&gt;;
+  private _properties?: Map&lt;keyof T, Map&lt;string, any&gt;&gt;;
   get properties() {
     if (this._properties &#x3D;&#x3D;&#x3D; undefined) {
-      this._properties &#x3D; this.helper.properties(this.annotations);
+      this._properties &#x3D; this.helper.properties&lt;T&gt;(this.annotations);
     }
     return this._properties;
   }
 
-  property(name: string) {
-    return this.properties.get(name);
+  property&lt;F&gt;(name: keyof T, type: &#x27;collection&#x27;): ODataEntitiesAnnotations&lt;F&gt;;
+  property&lt;F&gt;(name: keyof T, type: &#x27;single&#x27;): ODataEntityAnnotations&lt;F&gt;;
+  property&lt;F&gt;(
+    name: keyof T,
+    type: &#x27;single&#x27; | &#x27;collection&#x27;,
+  ): ODataEntityAnnotations&lt;F&gt; | ODataEntitiesAnnotations&lt;F&gt; {
+    const props &#x3D; this.properties.get(name);
+    return type &#x3D;&#x3D;&#x3D; &#x27;collection&#x27;
+      ? new ODataEntitiesAnnotations&lt;F&gt;(this.helper, props)
+      : new ODataEntityAnnotations&lt;F&gt;(this.helper, props);
   }
 
-  private _functions?: { [key: string]: any };
+  private _functions?: { [name: string]: any };
   get functions() {
     if (this._functions &#x3D;&#x3D;&#x3D; undefined) {
       this._functions &#x3D; this.helper.functions(this.annotations);
@@ -624,16 +854,24 @@ export class ODataEntityAnnotations extends ODataAnnotations {
   }
 }
 
-export class ODataEntitiesAnnotations extends ODataAnnotations {
-  clone(): ODataEntitiesAnnotations {
-    return new ODataEntitiesAnnotations(
+export class ODataEntitiesAnnotations&lt;T&gt; extends ODataAnnotations&lt;T&gt; {
+  union(other: ODataEntitiesAnnotations&lt;any&gt;): ODataEntitiesAnnotations&lt;any&gt; {
+    return new ODataEntitiesAnnotations&lt;any&gt;(
       this.helper,
-      new Map(this.annotations),
-      this.context
+      new Map&lt;string, any&gt;([...this.annotations, ...other.annotations]),
+      Object.assign({}, this.context, other.context),
     );
   }
 
-  data(data: { [key: string]: any }) {
+  clone(): ODataEntitiesAnnotations&lt;any&gt; {
+    return new ODataEntitiesAnnotations&lt;any&gt;(
+      this.helper,
+      new Map(this.annotations),
+      this.context,
+    );
+  }
+
+  data(data: { [name: string]: any }) {
     return this.helper.entities(data);
   }
 
@@ -664,17 +902,20 @@ export class ODataEntitiesAnnotations extends ODataAnnotations {
   }
 
   get skiptoken() {
-    let match &#x3D; (this.nextLink || &#x27;&#x27;).match(/[&amp;?]{1}\$skiptoken&#x3D;([\d\w\s&#x27;]+)/);
+    let match &#x3D; (this.nextLink || &#x27;&#x27;).match(
+      /[&amp;?]{1}\$skiptoken&#x3D;([\d\w\s&#x27;\-]+)/,
+    );
     return match !&#x3D;&#x3D; null ? match[1] : undefined;
   }
 
-  private _functions?: { [key: string]: any };
+  private _functions?: { [name: string]: any };
   get functions() {
     if (this._functions &#x3D;&#x3D;&#x3D; undefined) {
       this._functions &#x3D; this.helper.functions(this.annotations);
     }
     return this._functions;
   }
+
   function(name: string) {
     return this.functions[name];
   }

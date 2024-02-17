@@ -1,11 +1,11 @@
 {
-  "name": "@vigouredelaruse/angular-odata",
-  "version": "0.101.35",
+  "name": "angular-odata",
+  "version": "0.126.0",
   "license": "MIT",
-  "description": "Fork Of Client side OData typescript library for Angular",
+  "description": "Client side OData typescript library for Angular",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vigouredelaruse/angular-odata.git"
+    "url": "git+https://github.com/diegomvh/angular-odata.git"
   },
   "keywords": [
     "client",
@@ -25,15 +25,11 @@
   "homepage": "https://github.com/diegomvh/angular-odata",
   "private": false,
   "peerDependencies": {
-    "@angular/common": ">=14.0.3",
-    "@angular/compiler": ">=14.0.3",
-    "@angular/core": ">=14.0.3",
-    "@angular/forms": ">=14.0.3",
-    "@angular/platform-browser": ">=14.0.3",
-    "@angular/platform-browser-dynamic": ">=14.0.3",
-    "@angular/router": ">=14.0.3"
+    "@angular/common": ">=14.0.0",
+    "@angular/core": ">=14.0.0"
   },
   "dependencies": {
-    "tslib": "~2.3.0"
-  }
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
 }

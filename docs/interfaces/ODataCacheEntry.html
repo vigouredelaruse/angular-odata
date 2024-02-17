@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -44,23 +102,29 @@
 
 
 <ol class="breadcrumb">
-  <li>Interfaces</li>
-  <li
+  <li class="breadcrumb-item">Interfaces</li>
+  <li class="breadcrumb-item"
   >
   ODataCacheEntry</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -78,7 +142,7 @@
             </p>
 
 
-        <section>
+        <section data-compodoc="block-index">
             <h3 id="index">Index</h3>
             <table class="table table-sm table-bordered index-table">
                 <tbody>
@@ -123,7 +187,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-properties">
                 <h3 id="inputs">Properties</h3>
                     <table class="table table-sm table-bordered">
                         <tbody>
@@ -261,12 +325,12 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
+    <div class="tab-pane fade  tab-source-code" id="source">
         <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Observable, of, throwError } from &#x27;rxjs&#x27;;
 import { startWith, tap } from &#x27;rxjs/operators&#x27;;
 import { CACHE_KEY_SEPARATOR, DEFAULT_TIMEOUT } from &#x27;../constants&#x27;;
 import { ODataBatchResource, ODataRequest, ODataResponse } from &#x27;../resources&#x27;;
-import { Cache, PathSegmentNames } from &#x27;../types&#x27;;
+import { Cache, PathSegment } from &#x27;../types&#x27;;
 
 /**
  * A cache entry that holds a payload, a last read time, and a timeout for the entry.
@@ -295,19 +359,19 @@ export abstract class ODataCache implements Cache {
   abstract putResponse(req: ODataRequest&lt;any&gt;, res: ODataResponse&lt;any&gt;): void;
 
   /**
-   * Using the resource on the request build an array of string to identify the scope of the request 
+   * Using the resource on the request build an array of string to identify the scope of the request
    * @param req The request with the resource to build the scope
-   * @returns Array of string to identify the scope of the request 
+   * @returns Array of string to identify the scope of the request
    */
   scope(req: ODataRequest&lt;any&gt;): string[] {
     const segments &#x3D; req.resource.cloneSegments();
     return segments.segments({ key: true }).reduce(
       (acc, s) &#x3D;&gt; {
-        if (s.name &#x3D;&#x3D;&#x3D; PathSegmentNames.entitySet)
+        if (s.name &#x3D;&#x3D;&#x3D; PathSegment.entitySet)
           acc &#x3D; [...acc, s.path() as string];
         return acc;
       },
-      [&#x27;request&#x27;]
+      [&#x27;request&#x27;],
     );
   }
 
@@ -321,7 +385,9 @@ export abstract class ODataCache implements Cache {
     const context &#x3D; res.context;
     if (context.entitySet) {
       tags.push(
-        context.key ? &#x60;${context.entitySet}(${context.key})&#x60; : context.entitySet
+        context.key
+          ? &#x60;${context.entitySet}(${context.key})&#x60;
+          : context.entitySet,
       );
     }
     if (context.type) tags.push(context.type);
@@ -329,15 +395,15 @@ export abstract class ODataCache implements Cache {
   }
 
   /**
-   * Build an entry from a payload and some options 
+   * Build an entry from a payload and some options
    * @param payload The payload to store in the cache
    * @param timeout The timeout for the entry
-   * @param tags The tags for the entry 
-   * @returns The entry to store in the cache 
+   * @param tags The tags for the entry
+   * @returns The entry to store in the cache
    */
   buildEntry&lt;T&gt;(
     payload: T,
-    { timeout, tags }: { timeout?: number; tags?: string[] }
+    { timeout, tags }: { timeout?: number; tags?: string[] },
   ): ODataCacheEntry&lt;T&gt; {
     return {
       payload,
@@ -348,20 +414,20 @@ export abstract class ODataCache implements Cache {
   }
 
   /**
-   * Build a key from store an entry in the cache 
+   * Build a key from store an entry in the cache
    * @param names The names of the entry
-   * @returns The key for the entry 
+   * @returns The key for the entry
    */
   buildKey(names: string[]): string {
     return names.join(CACHE_KEY_SEPARATOR);
   }
 
   /**
-   * Put some payload in the cache 
-   * @param name The name for the entry 
-   * @param payload The payload to store in the cache 
-   * @param timeout The timeout for the entry 
-   * @param scope The scope for the entry 
+   * Put some payload in the cache
+   * @param name The name for the entry
+   * @param payload The payload to store in the cache
+   * @param timeout The timeout for the entry
+   * @param scope The scope for the entry
    * @param tags The tags for the entry
    */
   put&lt;T&gt;(
@@ -371,7 +437,7 @@ export abstract class ODataCache implements Cache {
       timeout,
       scope,
       tags,
-    }: { timeout?: number; scope?: string[]; tags?: string[] } &#x3D; {}
+    }: { timeout?: number; scope?: string[]; tags?: string[] } &#x3D; {},
   ) {
     const entry &#x3D; this.buildEntry&lt;T&gt;(payload, { timeout, tags });
     const key &#x3D; this.buildKey([...(scope || []), name]);
@@ -383,7 +449,7 @@ export abstract class ODataCache implements Cache {
    * Return the payload from the cache if it exists and is not expired
    * @param name The name of the entry
    * @param scope The scope of the entry
-   * @returns The payload of the entry 
+   * @returns The payload of the entry
    */
   get&lt;T&gt;(name: string, { scope }: { scope?: string[] } &#x3D; {}): T {
     const key &#x3D; this.buildKey([...(scope || []), name]);
@@ -394,7 +460,7 @@ export abstract class ODataCache implements Cache {
   }
 
   /**
-   * Remove all cache entries that are matching with the given options 
+   * Remove all cache entries that are matching with the given options
    * @param options The options to forget
    */
   forget({
@@ -423,9 +489,9 @@ export abstract class ODataCache implements Cache {
   }
 
   /**
-   * Check if the entry is expired 
+   * Check if the entry is expired
    * @param entry The cache entry
-   * @returns Boolean indicating if the entry is expired 
+   * @returns Boolean indicating if the entry is expired
    */
   isExpired(entry: ODataCacheEntry&lt;any&gt;) {
     return entry.lastRead &lt; Date.now() - (entry.timeout || this.timeout) * 1000;
@@ -435,11 +501,11 @@ export abstract class ODataCache implements Cache {
    * Using the request, handle the fetching of the response
    * @param req The request to fetch
    * @param res$ Observable of the response
-   * @returns 
+   * @returns
    */
   handleRequest(
     req: ODataRequest&lt;any&gt;,
-    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;
+    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;,
   ): Observable&lt;ODataResponse&lt;any&gt;&gt; {
     return req.isFetch()
       ? this.handleFetch(req, res$)
@@ -450,7 +516,7 @@ export abstract class ODataCache implements Cache {
 
   private handleFetch(
     req: ODataRequest&lt;any&gt;,
-    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;
+    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;,
   ): Observable&lt;ODataResponse&lt;any&gt;&gt; {
     const policy &#x3D; req.fetchPolicy;
     const cached &#x3D; this.getResponse(req);
@@ -473,7 +539,7 @@ export abstract class ODataCache implements Cache {
         tap((res: ODataResponse&lt;any&gt;) &#x3D;&gt; {
           if (res.options.cacheability !&#x3D;&#x3D; &#x27;no-store&#x27;)
             this.putResponse(req, res);
-        })
+        }),
       );
     }
     return cached !&#x3D;&#x3D; undefined &amp;&amp; policy !&#x3D;&#x3D; &#x27;network-only&#x27;
@@ -485,7 +551,7 @@ export abstract class ODataCache implements Cache {
 
   private handleMutate(
     req: ODataRequest&lt;any&gt;,
-    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;
+    res$: Observable&lt;ODataResponse&lt;any&gt;&gt;,
   ): Observable&lt;ODataResponse&lt;any&gt;&gt; {
     const requests &#x3D; req.isBatch()
       ? (req.resource as ODataBatchResource)

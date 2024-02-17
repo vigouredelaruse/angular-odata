@@ -44,7 +44,9 @@ import { ODataModule } from '@vigouredelaruse/angular-odata';
   imports: [
     ...
     ODataModule.forRoot({
-      serviceRootUrl: 'https://services.odata.org/V4/(S(4m0tuxtnhcfctl4gzem3gr10))/TripPinServiceRW/'
+      config: {
+        serviceRootUrl: 'https://services.odata.org/V4/(S(4m0tuxtnhcfctl4gzem3gr10))/TripPinServiceRW/'
+      }
     })
     ...
   ]
@@ -68,7 +70,7 @@ import { TripPinConfig, TripPinModule } from './trippin';
 @NgModule({
   imports: [
     ...
-    ODataModule.forRoot(TripPinConfig),
+    ODataModule.forRoot({ config: TripPinConfig }),
     TripPinModule
   ]
   ...
@@ -166,9 +168,9 @@ export class AppComponent {
       );
 
     // Store airports resource
-    var json = airports.toJSON();
+    var json = airports.toJson();
     // Load airports resource
-    airports = this.odata.fromJSON(json) as ODataEntitySetResource<Airport>;
+    airports = this.odata.fromJson(json) as ODataEntitySetResource<Airport>;
 
     // Change query definition of airports resource and fetch again
     airports.query((q) => q.filter().clear());

@@ -1,14 +1,8 @@
-import {
-  HttpClient,
-  HttpEvent,
-  HttpHeaders,
-  HttpParams,
-  HttpResponse,
-} from '@angular/common/http';
-import { Injectable, Injector } from '@angular/core';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { ODataApi } from './api';
+import { ODataConfigLoader } from './loaders';
 import { ODataCollection, ODataModel } from './models/index';
 import {
   ODataActionResource,
@@ -18,6 +12,7 @@ import {
   ODataFunctionResource,
   ODataMetadataResource,
   ODataNavigationPropertyResource,
+  ODataOptions,
   ODataRequest,
   ODataResource,
   ODataResponse,
@@ -28,28 +23,15 @@ import { ODataEntityService } from './services/entity';
 import { ODataSettings } from './settings';
 
 function addBody<T>(
-  options: {
-    etag?: string;
-    apiName?: string;
-    fetchPolicy?:
-      | 'cache-first'
-      | 'cache-and-network'
-      | 'network-only'
-      | 'no-cache'
-      | 'cache-only';
-    headers?: HttpHeaders | { [header: string]: string | string[] };
+  options: ODataOptions & {
     observe?: 'body' | 'events' | 'response';
-    params?: HttpParams | { [param: string]: string | string[] };
-    reportProgress?: boolean;
     responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-    withCredentials?: boolean;
   },
-  body: T | null
+  body: T | null,
 ): any {
   return {
     body,
     etag: options.etag,
-    apiName: options.apiName,
     fetchPolicy: options.fetchPolicy,
     headers: options.headers,
     observe: options.observe,
@@ -60,26 +42,28 @@ function addBody<T>(
   };
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ODataClient {
+  settings?: ODataSettings;
   constructor(
     private http: HttpClient,
-    private settings: ODataSettings,
-    private injector: Injector
+    private loader: ODataConfigLoader,
   ) {
-    this.settings.configure({
-      requester: (req: ODataRequest<any>): Observable<any> =>
-        this.http.request(req.method, `${req.url}`, {
-          body: req.body,
-          headers: req.headers,
-          observe: req.observe,
-          params: req.params,
-          reportProgress: req.reportProgress,
-          responseType: req.responseType,
-          withCredentials: req.withCredentials,
-        }),
+    this.loader.loadConfigs().subscribe((config) => {
+      this.settings = new ODataSettings(config);
+      this.settings.configure({
+        requester: (req: ODataRequest<any>): Observable<any> =>
+          this.http.request(req.method, `${req.url}`, {
+            body: req.body,
+            context: req.context,
+            headers: req.headers,
+            observe: req.observe,
+            params: req.params,
+            reportProgress: req.reportProgress,
+            responseType: req.responseType,
+            withCredentials: req.withCredentials,
+          }),
+      });
     });
   }
 
@@ -93,12 +77,16 @@ export class ODataClient {
   apiFor(value?: ODataResource<any> | string): ODataApi {
     let api: ODataApi | undefined = undefined;
     if (value instanceof ODataResource)
-      api = this.settings.findApiForTypes(value.types());
+      api = this.settings!.findApiForTypes(value.types());
     else if (typeof value === 'string')
       api =
-        this.settings.findApiByName(value) ||
-        this.settings.findApiForType(value);
-    return api || this.settings.defaultApi();
+        this.settings!.findApiByName(value) ||
+        this.settings!.findApiForType(value);
+    return api || this.settings!.defaultApi();
+  }
+
+  defaultApi() {
+    return this.settings!.defaultApi();
   }
 
   /**
@@ -107,7 +95,7 @@ export class ODataClient {
    * @returns The parser for the given type.
    */
   parserForType<T>(type: string) {
-    return this.settings.parserForType<T>(type);
+    return this.settings!.parserForType<T>(type);
   }
 
   /**
@@ -116,7 +104,7 @@ export class ODataClient {
    * @returns The enum type for the given type.
    */
   enumTypeForType<T>(type: string) {
-    return this.settings.enumTypeForType<T>(type);
+    return this.settings!.enumTypeForType<T>(type);
   }
 
   /**
@@ -125,7 +113,7 @@ export class ODataClient {
    * @returns The structured type for the given type.
    */
   structuredTypeForType<T>(type: string) {
-    return this.settings.structuredTypeForType<T>(type);
+    return this.settings!.structuredTypeForType<T>(type);
   }
 
   /**
@@ -134,7 +122,7 @@ export class ODataClient {
    * @returns The callable for the given type.
    */
   callableForType<T>(type: string) {
-    return this.settings.callableForType<T>(type);
+    return this.settings!.callableForType<T>(type);
   }
 
   /**
@@ -143,7 +131,7 @@ export class ODataClient {
    * @returns The entity set for the given type.
    */
   entitySetForType(type: string) {
-    return this.settings.entitySetForType(type);
+    return this.settings!.entitySetForType(type);
   }
 
   /**
@@ -152,7 +140,7 @@ export class ODataClient {
    * @returns The model for the given type.
    */
   modelForType(type: string): typeof ODataModel {
-    return this.settings.modelForType(type);
+    return this.settings!.modelForType(type);
   }
 
   /**
@@ -161,7 +149,7 @@ export class ODataClient {
    * @returns The collection for the given type.
    */
   collectionForType(type: string): typeof ODataCollection {
-    return this.settings.collectionForType(type);
+    return this.settings!.collectionForType(type);
   }
 
   /**
@@ -169,8 +157,9 @@ export class ODataClient {
    * @param type The string type of the service.
    * @returns The service for the given type.
    */
-  serviceForType(type: string): ODataEntityService<any> {
-    return this.injector.get(this.settings.serviceForType(type));
+  serviceForType(type: string): ODataEntityService<any> | undefined {
+    //return this.injector.get(this.settings!.serviceForType(type));
+    return undefined;
   }
 
   /**
@@ -178,47 +167,49 @@ export class ODataClient {
    * @param type The string entity type binding to the service.
    * @returns The service for the given entity type.
    */
-  serviceForEntityType(type: string): ODataEntityService<any> {
-    return this.injector.get(this.settings.serviceForEntityType(type));
+  serviceForEntityType(type: string): ODataEntityService<any> | undefined {
+    //return this.injector.get(this.settings!.serviceForEntityType(type));
+    return undefined;
   }
 
   enumTypeByName<T>(name: string) {
-    return this.settings.enumTypeByName<T>(name);
+    return this.settings!.enumTypeByName<T>(name);
   }
   structuredTypeByName<T>(name: string) {
-    return this.settings.structuredTypeByName<T>(name);
+    return this.settings!.structuredTypeByName<T>(name);
   }
   callableByName<T>(name: string) {
-    return this.settings.callableByName<T>(name);
+    return this.settings!.callableByName<T>(name);
   }
   entitySetByName(name: string) {
-    return this.settings.entitySetByName(name);
+    return this.settings!.entitySetByName(name);
   }
   modelByName(name: string): typeof ODataModel {
-    return this.settings.modelByName(name);
+    return this.settings!.modelByName(name);
   }
   collectionByName(name: string): typeof ODataCollection {
-    return this.settings.collectionByName(name);
+    return this.settings!.collectionByName(name);
   }
-  serviceByName(name: string): ODataEntityService<any> {
-    return this.injector.get(this.settings.serviceByName(name));
+  serviceByName(name: string): ODataEntityService<any> | undefined {
+    //return this.injector.get(this.settings!.serviceByName(name));
+    return undefined;
   }
   //#endregion
 
   //#region API Resource Proxy Methods
-  fromJSON<E>(
+  fromJson<E>(
     json: { segments: ODataSegment[]; options: { [name: string]: any } },
-    apiNameOrType?: string
+    apiNameOrType?: string,
   ):
     | ODataEntityResource<E>
     | ODataEntitySetResource<E>
     | ODataNavigationPropertyResource<E>
     | ODataSingletonResource<E>;
-  fromJSON(
+  fromJson(
     json: { segments: ODataSegment[]; options: { [name: string]: any } },
-    apiNameOrType?: string
+    apiNameOrType?: string,
   ) {
-    return this.apiFor(apiNameOrType).fromJSON<any>(json);
+    return this.apiFor(apiNameOrType).fromJson<any>(json);
   }
 
   // Requests
@@ -258,7 +249,7 @@ export class ODataClient {
    */
   entitySet<T>(
     path: string,
-    apiNameOrType?: string
+    apiNameOrType?: string,
   ): ODataEntitySetResource<T> {
     return this.apiFor(apiNameOrType).entitySet<T>(path);
   }
@@ -271,7 +262,7 @@ export class ODataClient {
    */
   action<P, R>(
     path: string,
-    apiNameOrType?: string
+    apiNameOrType?: string,
   ): ODataActionResource<P, R> {
     return this.apiFor(apiNameOrType).action<P, R>(path);
   }
@@ -284,7 +275,7 @@ export class ODataClient {
    */
   function<P, R>(
     path: string,
-    apiNameOrType?: string
+    apiNameOrType?: string,
   ): ODataFunctionResource<P, R> {
     return this.apiFor(apiNameOrType).function<P, R>(path);
   }
@@ -294,1349 +285,560 @@ export class ODataClient {
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      params?: HttpParams | { [param: string]: string | string[] };
       observe: 'events';
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      reportProgress?: boolean;
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<any>>;
 
   request<R>(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      reportProgress?: boolean;
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<R>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      reportProgress?: boolean;
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   request<R>(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      reportProgress?: boolean;
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<R>>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      reportProgress?: boolean;
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   request<R>(
     method: string,
     resource: ODataResource<any>,
-    options: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
       responseType?: 'json';
-      reportProgress?: boolean;
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<R>;
 
   request(
     method: string,
     resource: ODataResource<any>,
-    options?: {
+    options: ODataOptions & {
       body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      params?: HttpParams | { [param: string]: string | string[] };
       observe?: 'body' | 'events' | 'response';
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    }
-  ): Observable<any>;
-
-  request(
-    method: string,
-    resource: ODataResource<any>,
-    options: {
-      body: any | null;
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
-      observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
-      responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<any> {
-    let api = options.apiName
-      ? this.settings.apiByName(options.apiName)
-      : resource.api;
-    if (!api)
-      throw new Error(
-        `The types: '[${resource
-          .types()
-          .join(', ')}]' does not belongs to any known configuration`
-      );
+    let api = this.apiFor(resource);
 
-    const request = new ODataRequest({
-      method,
-      api,
-      resource,
-      body: options.body,
-      observe: options.observe === 'events' ? 'events' : 'response',
-      etag: options.etag,
-      headers: options.headers,
-      reportProgress: options.reportProgress,
-      params: options.params,
-      responseType: options.responseType,
-      fetchPolicy: options.fetchPolicy,
-      withCredentials: options.withCredentials,
-    });
-
-    return api
-      .request(request)
-      .pipe(
-        map((res: any) =>
-          options.observe === undefined || options.observe === 'body'
-            ? res.body
-            : res
-        )
-      );
+    return api.request(method, resource, options);
   }
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   delete<T>(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   delete<T>(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   delete(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   delete<T>(
     resource: ODataResource<any>,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   delete(
     resource: ODataResource<any>,
-    options: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('DELETE', resource, addBody<any>(options, null));
   }
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   get<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   get<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   get(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   get<T>(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   get(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('GET', resource, options as any);
   }
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   head<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   head<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   head(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   head<T>(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   head(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('HEAD', resource, options as any);
   }
 
   jsonp(
     resource: ODataResource<any>,
-    callbackParam: string
+    callbackParam: string,
   ): Observable<Object>;
 
   jsonp<T>(resource: ODataResource<any>, callbackParam: string): Observable<T>;
@@ -1652,325 +854,138 @@ export class ODataClient {
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   options<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   options<T>(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   options(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   options<T>(
     resource: ODataResource<any>,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   options(
     resource: ODataResource<any>,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('OPTIONS', resource, options as any);
   }
@@ -1978,337 +993,145 @@ export class ODataClient {
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   patch<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   patch<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   patch<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   patch(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('PATCH', resource, addBody(options, body));
   }
@@ -2316,321 +1139,145 @@ export class ODataClient {
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   post<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   post<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   post<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   post(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('POST', resource, addBody(options, body));
   }
@@ -2638,337 +1285,145 @@ export class ODataClient {
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ArrayBuffer>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Blob>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<string>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<ArrayBuffer>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Blob>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<string>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<Object>>;
 
   put<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'events';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<HttpEvent<T>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'arraybuffer';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<ArrayBuffer>>;
+    },
+  ): Observable<ODataResponse<ArrayBuffer>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'blob';
-      withCredentials?: boolean;
-    }
-  ): Observable<HttpResponse<Blob>>;
+    },
+  ): Observable<ODataResponse<Blob>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType: 'text';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<string>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<Object>>;
 
   put<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe: 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<ODataResponse<T>>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<Object>;
 
   put<T>(
     resource: ODataResource<any>,
     body: any | null,
-    options?: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'json';
-      withCredentials?: boolean;
-    }
+    },
   ): Observable<T>;
 
   put(
     resource: ODataResource<any>,
     body: any | null,
-    options: {
-      etag?: string;
-      apiName?: string;
-      fetchPolicy?:
-        | 'cache-first'
-        | 'cache-and-network'
-        | 'network-only'
-        | 'no-cache'
-        | 'cache-only';
-      headers?: HttpHeaders | { [header: string]: string | string[] };
+    options: ODataOptions & {
       observe?: 'body' | 'events' | 'response';
-      params?: HttpParams | { [param: string]: string | string[] };
-      reportProgress?: boolean;
       responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
-      withCredentials?: boolean;
-    } = {}
+    } = {},
   ): Observable<any> {
     return this.request<any>('PUT', resource, addBody(options, body));
   }

@@ -1,11 +1,4 @@
-import buildQuery, {
-  Expand,
-  OrderBy,
-  alias,
-  raw,
-  Filter,
-  binary,
-} from './builder';
+import buildQuery, { Expand, OrderBy, alias, raw, binary } from './builder';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -1429,7 +1422,7 @@ describe('function', () => {
   it('should support a function on a collection with an array/collection parameter of a complex type', () => {
     const someCollection = alias(
       raw(JSON.stringify([{ Name: 'Sean' }, { Name: 'Jason' }])),
-      'SomeCollection'
+      'SomeCollection',
     );
     const func = {
       Test: { SomeCollection: someCollection },

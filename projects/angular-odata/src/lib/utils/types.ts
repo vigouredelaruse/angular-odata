@@ -14,9 +14,8 @@ export const Types = {
     return Object.prototype.toString.call(value).slice(8, -1);
   },
 
-  isObject(value: any): boolean {
-    var type = typeof value;
-    return value != null && (type === 'object' || type === 'function');
+  isObject(value: any) {
+    return typeof value === 'object' && value !== null;
   },
 
   isPlainObject(value: any) {
@@ -45,13 +44,12 @@ export const Types = {
       value === undefined ||
       value === null ||
       (typeof value === 'string' && !value.length) ||
+      (value instanceof Date && isNaN(value.valueOf())) ||
       (Types.isMap(value) && !value.size) ||
       (Types.isArray(value) && !value.length) ||
       (Types.isFunction(value.isEmpty) && value.isEmpty()) ||
       (Types.isArray(value) &&
         (value as any[]).every((v) => Types.isEmpty(v))) ||
-      (Types.isObject(value) &&
-        !Object.keys(value).filter((k) => value.hasOwnProperty(k)).length) ||
       (Types.isPlainObject(value) &&
         !Object.keys(value).filter((k) => value.hasOwnProperty(k)).length)
     );

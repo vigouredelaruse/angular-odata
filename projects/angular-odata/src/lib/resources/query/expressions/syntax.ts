@@ -1,53 +1,138 @@
+import { ODataStructuredTypeFieldParser } from '../../../schema';
+import { Parser, ParserOptions } from '../../../types';
 import { Objects, Types } from '../../../utils';
 import type { QueryCustomType } from '../builder';
 import { normalizeValue } from '../builder';
+import { ApplyExpression } from './apply';
+import { ComputeExpression } from './compute';
+import { CountExpression } from './count';
+import { ExpandExpression } from './expand';
+import { FilterExpression } from './filter';
+import { OrderByExpression } from './orderby';
+import { SearchExpression } from './search';
+import { SelectExpression } from './select';
+
+export type Normalize = 'all' | 'right' | 'left' | 'none';
 
 export interface Renderable {
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<any>;
+    options?: ParserOptions;
   }): string;
-  toString(): string;
-  toJSON(): any;
+  toJson(): any;
   clone(): any;
+  resolve(parser: any): any;
 }
 
-export class Field<T extends object> implements ProxyHandler<T> {
-  constructor(public name: string = '') {}
+export const FieldFactory = <T extends object>(
+  names: (string | Renderable)[] = []
+): any =>
+  new Proxy({ _names: names } as T, {
+    get(target: T, key: string | symbol) {
+      let names = (target as any)['_names'] as (string | Renderable)[];
+      if (key === 'render') {
+        return ({
+          aliases,
+          escape,
+          prefix,
+          parser,
+          options,
+        }: {
+          aliases?: QueryCustomType[];
+          escape?: boolean;
+          prefix?: string;
+          parser?: Parser<T>;
+          options?: ParserOptions;
+        }) => {
+          let values = names.map((n: any) =>
+            render(n, { aliases, escape, prefix, parser, options })
+          );
+          if (prefix && (names.length === 0 || typeof names[0] === 'string')) {
+            values = [prefix, ...values];
+          }
+          return values.join('/');
+        };
+      } else if (key === 'clone') {
+        return () => FieldFactory([...names]);
+      } else if (key === 'isField') {
+        return () => true;
+      } else if (key === 'toJson') {
+        return () => ({
+          $type: 'Field',
+          names: names,
+        });
+      } else if (key === 'resolve') {
+        return (parser: any) =>
+          names.reduce(
+            (acc: any, name: string | Renderable) =>
+              typeof name === 'string'
+                ? acc?.field(name)
+                : name?.resolve(parser),
+            parser
+          );
+      } else {
+        return FieldFactory([...names, key as string]);
+      }
+    },
 
-  static factory<T extends object>(name: string = '') {
-    return new Proxy({ _name: name } as T, new Field<T>());
-  }
+    has(target: T, key: string): any {
+      return (
+        ['toJson', 'isField', 'clone', 'render', 'resolve'].includes(key) ||
+        key in target
+      );
+    },
+  });
 
-  get(target: T, key: string | symbol): any {
-    let name = (target as any)['_name'];
-    if (key === 'render') {
-      return ({ prefix }: { prefix?: string }) =>
-        prefix ? `${prefix}/${name}` : name;
-    } else if (key === 'clone') {
-      return () => Field.factory(name);
-    } else if (key === Symbol.toStringTag) {
-      return () => 'Field';
-    } else if (key === 'toJSON') {
-      return () => ({
-        $type: Types.rawType(this),
-        name: name,
-      });
-    } else {
-      name = name ? `${name}/${key as string}` : key;
-      return new Proxy({ _name: name } as any, this);
+export const RenderableFactory = (value: any): Renderable => {
+  if (Types.isPlainObject(value) && '$type' in value) {
+    switch (value.$type) {
+      case 'SelectExpression':
+        return SelectExpression.fromJson(value);
+      case 'ExpandExpression':
+        return ExpandExpression.fromJson(value);
+      case 'ComputeExpression':
+        return ComputeExpression.fromJson(value);
+      case 'ApplyExpression':
+        return ApplyExpression.fromJson(value);
+      case 'FilterExpression':
+        return FilterExpression.fromJson(value);
+      case 'OrderByExpression':
+        return OrderByExpression.fromJson(value);
+      case 'SearchExpression':
+        return SearchExpression.fromJson(value);
+      case 'CountExpression':
+        return CountExpression.fromJson(value);
+      case 'Function':
+        return Function.fromJson(value);
+      case 'Operator':
+        return Operator.fromJson(value);
+      case 'Grouping':
+        return Grouping.fromJson(value);
+      case 'Aggregate':
+        return Aggregate.fromJson(value);
+      case 'GroupBy':
+        return GroupBy.fromJson(value);
+      case 'Lambda':
+        return Lambda.fromJson(value);
+      case 'Type':
+        return Type.fromJson(value);
+      case 'Field':
+        return FieldFactory(value['names']);
+      default:
+        return value;
     }
   }
-
-  has(target: T, key: string): any {
-    return ['toJSON', 'clone', 'render'].includes(key) || key in target;
-  }
-}
+  return value;
+};
 
 function applyMixins(derivedCtor: any, constructors: any[]) {
   constructors.forEach((baseCtor) => {
@@ -69,36 +154,75 @@ export function render(
     normalize,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     normalize?: boolean;
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<any>;
+    options?: ParserOptions;
   } = {}
 ): string | number | boolean | null {
-  if (typeof value === 'function') {
-    return render(value(syntax), { aliases, normalize, prefix });
+  if (Types.isFunction(value)) {
+    return render(value(syntax), {
+      aliases,
+      normalize,
+      prefix,
+      parser,
+      options,
+    });
   }
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    value.render !== undefined
-  ) {
-    return render(value.render({ aliases, escape, prefix }), {
+  if (Types.isObject(value) && 'render' in value) {
+    return render(value.render({ aliases, escape, prefix, parser, options }), {
       aliases,
       normalize,
       escape,
       prefix,
+      parser,
+      options,
     });
   }
   return normalize ? normalizeValue(value, { aliases, escape }) : value;
+}
+
+export function resolve(values: any, parser?: Parser<any>) {
+  if (parser !== undefined) {
+    let fields = values.filter(
+      (v: any) => Types.isObject(v) && 'isField' in v && v.isField()
+    );
+    if (fields.length === 1 && Types.isObject(parser) && 'field' in parser) {
+      return fields[0].resolve(parser);
+    }
+  }
+  return parser;
+}
+
+export function encode(
+  values: any,
+  parser?: Parser<any>,
+  options?: ParserOptions
+) {
+  if (parser !== undefined) {
+    return values.map((v: any) => {
+      if (Types.isArray(v)) return encode(v, parser, options);
+      if (Types.isObject(v) || v == null) return v;
+      try {
+        return parser.encode(v, options);
+      } catch {
+        return v;
+      }
+    });
+  }
+  return values;
 }
 
 export class Function<T> implements Renderable {
   constructor(
     protected name: string,
     protected values: any[],
-    protected normalize: boolean = true,
+    protected normalize: Normalize,
     protected escape: boolean = false
   ) {}
 
@@ -106,31 +230,61 @@ export class Function<T> implements Renderable {
     return 'Function';
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       name: this.name,
-      values: this.values,
+      values: this.values.map((v) =>
+        Types.isObject(v) && 'toJson' in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Function<T> {
+    return new Function<T>(
+      json['name'],
+      json['values'].map((v: any) => RenderableFactory(v)),
+      json['normalize'],
+      json['escape']
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string {
-    let [field, ...values] = this.values;
+    parser = resolve(this.values, parser);
+    let [left, ...values] = encode(this.values, parser, options);
 
-    field = render(field, { aliases, escape, prefix });
+    left = render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize === 'all' || this.normalize === 'left',
+      options,
+    });
     const params = [
-      field,
-      ...values.map((v) =>
-        render(v, { aliases, escape, prefix, normalize: this.normalize })
+      left,
+      ...values.map((v: any) =>
+        render(v, {
+          aliases,
+          escape,
+          prefix,
+          parser,
+          normalize: this.normalize === 'all' || this.normalize === 'right',
+          options,
+        })
       ),
     ];
     return `${this.name}(${params.join(', ')})`;
@@ -144,148 +298,167 @@ export class Function<T> implements Renderable {
       this.escape
     );
   }
+
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class StringAndCollectionFunctions<T> {
-  concat(field: any, value: any, normalize?: boolean) {
-    return new Function<T>('concat', [field, value], normalize);
+  concat(left: any, right: any, normalize: Normalize = 'right') {
+    return new Function<T>('concat', [left, right], normalize);
   }
 
-  contains(field: any, value: any, normalize?: boolean) {
-    return new Function<T>('contains', [field, value], normalize);
+  contains(left: any, right: any, normalize: Normalize = 'right') {
+    return new Function<T>('contains', [left, right], normalize);
   }
 
-  endsWith(field: any, value: any, normalize?: boolean) {
-    return new Function<T>('endswith', [field, value], normalize);
+  endsWith(left: any, right: any, normalize: Normalize = 'right') {
+    return new Function<T>('endswith', [left, right], normalize);
   }
 
-  indexOf(field: any, value: any, normalize?: boolean) {
-    return new Function<T>('indexof', [field, value], normalize);
+  indexOf(left: any, right: any, normalize: Normalize = 'right') {
+    return new Function<T>('indexof', [left, right], normalize);
   }
 
-  length(value: any, normalize?: boolean) {
-    return new Function<T>('length', [value], normalize);
+  length(left: any, normalize: Normalize = 'right') {
+    return new Function<T>('length', [left], normalize);
   }
 
-  startsWith(field: any, value: any, normalize?: boolean) {
-    return new Function<T>('startswith', [field, value], normalize);
+  startsWith(left: any, right: any, normalize: Normalize = 'right') {
+    return new Function<T>('startswith', [left, right], normalize);
   }
 
-  subString(field: any, start: number, length?: number) {
-    let values = [field, start];
+  subString(
+    left: any,
+    right: number,
+    length?: number,
+    normalize: Normalize = 'none'
+  ) {
+    let values = [left, right];
     if (length !== undefined) {
       values.push(length);
     }
-    return new Function<T>('substring', values);
+    return new Function<T>('substring', values, normalize);
   }
 }
 
 export class CollectionFunctions<T> {
-  hasSubset(s1: T, s2: any) {
-    return new Function<T>('hassubset', [s1, s2]);
+  hasSubset(left: T, right: any, normalize: Normalize = 'none') {
+    return new Function<T>('hassubset', [left, right], normalize);
   }
-  hasSubsequence(s1: T, s2: any) {
-    return new Function<T>('hassubsequence', [s1, s2]);
+  hasSubsequence(left: T, right: any, normalize: Normalize = 'none') {
+    return new Function<T>('hassubsequence', [left, right], normalize);
   }
 }
 
 export class StringFunctions<T> {
-  matchesPattern(value: T | string, pattern: string) {
-    return new Function<T>('matchesPattern', [value, pattern]);
+  matchesPattern(
+    left: any | string,
+    pattern: string,
+    normalize: Normalize = 'none'
+  ) {
+    return new Function<T>('matchesPattern', [left, pattern], normalize);
   }
-  toLower(value: T) {
-    return new Function<T>('tolower', [value]);
+  toLower(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('tolower', [left], normalize);
   }
-  toUpper(value: T) {
-    return new Function<T>('toupper', [value]);
+  toUpper(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('toupper', [left], normalize);
   }
-  trim(value: T) {
-    return new Function<T>('trim', [value]);
+  trim(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('trim', [left], normalize);
   }
 }
 
 export class DateAndTimeFunctions<T> {
-  date(value: any) {
-    return new Function<T>('date', [value]);
+  date(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('date', [left], normalize);
   }
-  day(value: any) {
-    return new Function<T>('day', [value]);
+  day(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('day', [left], normalize);
   }
-  fractionalseconds(value: any) {
-    return new Function<T>('fractionalseconds', [value]);
+  fractionalseconds(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('fractionalseconds', [left], normalize);
   }
-  hour(value: any) {
-    return new Function<T>('hour', [value]);
+  hour(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('hour', [left], normalize);
   }
-  maxdatetime(value: any) {
-    return new Function<T>('maxdatetime', [value]);
+  maxdatetime(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('maxdatetime', [left], normalize);
   }
-  mindatetime(value: any) {
-    return new Function<T>('mindatetime', [value]);
+  mindatetime(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('mindatetime', [left], normalize);
   }
-  minute(value: any) {
-    return new Function<T>('minute', [value]);
+  minute(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('minute', [left], normalize);
   }
-  month(value: any) {
-    return new Function<T>('month', [value]);
+  month(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('month', [left], normalize);
   }
   now() {
-    return new Function<T>('now', []);
+    return new Function<T>('now', [], 'none');
   }
-  second(value: any) {
-    return new Function<T>('second', [value]);
+  second(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('second', [left], normalize);
   }
-  time(value: any) {
-    return new Function<T>('time', [value]);
+  time(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('time', [left], normalize);
   }
-  totaloffsetminutes(value: any) {
-    return new Function<T>('totaloffsetminutes', [value]);
+  totaloffsetminutes(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('totaloffsetminutes', [left], normalize);
   }
-  totalseconds(value: any) {
-    return new Function<T>('totalseconds', [value]);
+  totalseconds(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('totalseconds', [left], normalize);
   }
-  year(value: any) {
-    return new Function<T>('year', [value]);
+  year(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('year', [left], normalize);
   }
 }
 
 export class ArithmeticFunctions<T> {
-  ceiling(value: T | string) {
-    return new Function<T>('ceiling', [value]);
+  ceiling(left: T | string, normalize: Normalize = 'none') {
+    return new Function<T>('ceiling', [left], normalize);
   }
-  floor(value: T | string) {
-    return new Function<T>('floor', [value]);
+  floor(left: T | string, normalize: Normalize = 'none') {
+    return new Function<T>('floor', [left], normalize);
   }
-  round(value: T | string) {
-    return new Function<T>('round', [value]);
+  round(left: T | string, normalize: Normalize = 'none') {
+    return new Function<T>('round', [left], normalize);
   }
 }
 
 export class TypeFunctions<T> {
-  cast(value: T | string, type?: string) {
-    return new Function<T>('cast', [value, type]);
+  cast<N>(left: T | string, type?: string): N {
+    return FieldFactory<Required<N>>([
+      type !== undefined
+        ? new Type<T>('cast', type, left)
+        : new Type<T>('cast', left as string),
+    ]);
   }
 
-  isof(value: T | string, type?: string) {
-    return new Function<T>('isof', [value, type]);
+  isof(left: T | string, type?: string) {
+    return type !== undefined
+      ? new Type<T>('isof', type, left)
+      : new Type<T>('isof', left as string);
   }
 }
 
 export class GeoFunctions<T> {
-  geoDistance(value: T, point: string, normalize?: boolean) {
-    return new Function<T>('geo.distance', [value, point], normalize);
+  geoDistance(left: T, right: string, normalize: Normalize = 'right') {
+    return new Function<T>('geo.distance', [left, right], normalize);
   }
-  geoIntersects(value: T, polygon: string, normalize?: boolean) {
-    return new Function<T>('geo.intersects', [value, polygon], normalize);
+  geoIntersects(left: T, right: string, normalize: Normalize = 'right') {
+    return new Function<T>('geo.intersects', [left, right], normalize);
   }
-  geoLength(line: T, normalize?: boolean) {
-    return new Function<T>('geo.length', [line], normalize);
+  geoLength(left: T, normalize: Normalize = 'none') {
+    return new Function<T>('geo.length', [left], normalize);
   }
 }
 
 export class ConditionalFunctions<T> {
-  case(condition: T | string, value: any) {
-    return new Function<T>('case', [condition, value]);
+  case(left: T | string, right: any, normalize: Normalize = 'none') {
+    return new Function<T>('case', [left, right], normalize);
   }
 }
 
@@ -293,34 +466,56 @@ export class Operator<T> implements Renderable {
   constructor(
     protected op: string,
     protected values: any[],
-    protected normalize: boolean = true
+    protected normalize: Normalize
   ) {}
 
   get [Symbol.toStringTag]() {
     return 'Operator';
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) =>
+        Types.isObject(v) && 'toJson' in v ? v.toJson() : v
+      ),
       normalize: this.normalize,
     };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Operator<T> {
+    return new Operator<T>(
+      json['op'],
+      json['values'].map((v: any) => RenderableFactory(v)),
+      json['normalize']
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string {
-    let [left, right] = this.values;
+    parser = resolve(this.values, parser);
+    let [left, right] = encode(this.values, parser, options);
 
-    left = render(left, { aliases, escape, prefix });
+    left = render(left, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      normalize: this.normalize === 'all' || this.normalize === 'left',
+      options,
+    });
     if (right !== undefined) {
       right = Array.isArray(right)
         ? `(${right
@@ -329,7 +524,10 @@ export class Operator<T> implements Renderable {
                 aliases,
                 escape,
                 prefix,
-                normalize: this.normalize,
+                parser,
+                normalize:
+                  this.normalize === 'all' || this.normalize === 'right',
+                options,
               })
             )
             .join(',')})`
@@ -337,7 +535,9 @@ export class Operator<T> implements Renderable {
             aliases,
             escape,
             prefix,
-            normalize: this.normalize,
+            parser,
+            normalize: this.normalize === 'all' || this.normalize === 'right',
+            options,
           });
       return `${left} ${this.op} ${right}`;
     }
@@ -351,63 +551,66 @@ export class Operator<T> implements Renderable {
       this.normalize
     );
   }
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class LogicalOperators<T> {
-  eq(left: any, right: any, normalize?: boolean) {
+  eq(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('eq', [left, right], normalize);
   }
-  ne(left: any, right: any, normalize?: boolean) {
+  ne(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('ne', [left, right], normalize);
   }
-  gt(left: any, right: any, normalize?: boolean) {
+  gt(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('gt', [left, right], normalize);
   }
-  ge(left: any, right: any, normalize?: boolean) {
+  ge(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('ge', [left, right], normalize);
   }
-  lt(left: any, right: any, normalize?: boolean) {
+  lt(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('lt', [left, right], normalize);
   }
-  le(left: any, right: any, normalize?: boolean) {
+  le(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('le', [left, right], normalize);
   }
   /*
-  and(left: any, right: any, normalize?: boolean) {
+  and(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('and', [left, right], normalize);
   }
-  or(left: any, right: any, normalize?: boolean) {
+  or(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('or', [left, right], normalize);
   }
   */
-  not(value: any, normalize?: boolean) {
-    return new Operator<T>('not', [value], normalize);
+  not(left: any, normalize: Normalize = 'none') {
+    return new Operator<T>('not', [left], normalize);
   }
-  has(left: any, right: any, normalize?: boolean) {
+  has(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('has', [left, right], normalize);
   }
-  in(left: any, right: any, normalize?: boolean) {
+  in(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('in', [left, right], normalize);
   }
 }
 
 export class ArithmeticOperators<T> {
-  add(left: any, right: any, normalize?: boolean) {
+  add(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator<T>('add', [left, right], normalize);
   }
-  sub(left: any, right: any, normalize?: boolean) {
+  sub(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('sub', [left, right], normalize);
   }
-  mul(left: any, right: any, normalize?: boolean) {
+  mul(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('mul', [left, right], normalize);
   }
-  div(left: any, right: any, normalize?: boolean) {
+  div(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('div', [left, right], normalize);
   }
-  mod(left: any, right: any, normalize?: boolean) {
+  mod(left: any, right: any, normalize: Normalize = 'right') {
     return new Operator('mod', [left, right], normalize);
   }
-  neg(value: any, normalize?: boolean) {
+  neg(value: any, normalize: Normalize = 'right') {
     return new Operator('-', [value], normalize);
   }
 }
@@ -419,27 +622,302 @@ export class Grouping<T> implements Renderable {
     return 'Grouping';
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
-      group: this.group.toJSON(),
+      group: this.group.toJson(),
     };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Grouping<T> {
+    return new Grouping<T>(json['group'].map((v: any) => RenderableFactory(v)));
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string {
-    return `(${render(this.group, { aliases, escape, prefix })})`;
+    return `(${render(this.group, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })})`;
   }
 
   clone() {
     return new Grouping(Objects.clone(this.group));
+  }
+  resolve(parser: any) {
+    return parser;
+  }
+}
+
+export class GroupingOperators<T> {
+  group(value: any) {
+    return new Grouping<T>(value);
+  }
+  rollup(...values: any) {
+    return new Function<T>('rollup', values, 'none');
+  }
+}
+
+export type AggregateMethod =
+  | 'sum'
+  | 'min'
+  | 'max'
+  | 'average'
+  | 'countdistinct'; //, or with custom aggregation methods;
+
+export class Aggregate<T> implements Renderable {
+  constructor(
+    protected value: Renderable,
+    protected method: AggregateMethod,
+    protected alias: string
+  ) {}
+
+  get [Symbol.toStringTag]() {
+    return 'Aggregate';
+  }
+
+  toJson() {
+    return {
+      $type: Types.rawType(this),
+      value: this.value.toJson(),
+      method: this.method,
+      alias: this.alias,
+    };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Aggregate<T> {
+    return new Aggregate<T>(
+      RenderableFactory(json['value']),
+      json['method'],
+      json['alias']
+    );
+  }
+
+  render({
+    aliases,
+    escape,
+    prefix,
+    parser,
+    options,
+  }: {
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
+  }): string {
+    return `aggregate(${render(this.value, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })} with ${this.method} as ${this.alias})`;
+  }
+
+  clone() {
+    return new Aggregate(Objects.clone(this.value), this.method, this.alias);
+  }
+  resolve(parser: any) {
+    return parser;
+  }
+}
+
+export class GroupBy<T> implements Renderable {
+  constructor(
+    protected properties: Renderable[],
+    protected transformations?: Renderable
+  ) {}
+
+  get [Symbol.toStringTag]() {
+    return 'GroupBy';
+  }
+
+  toJson() {
+    return {
+      $type: Types.rawType(this),
+      properties: this.properties.map((p) => p.toJson()),
+      transformations: this.transformations?.toJson(),
+    };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): GroupBy<T> {
+    return new GroupBy<T>(
+      json['properties'].map((p: any) => RenderableFactory(p)),
+      RenderableFactory(json['transformations'])
+    );
+  }
+
+  render({
+    aliases,
+    escape,
+    prefix,
+    parser,
+    options,
+  }: {
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
+  }): string {
+    const properties = this.properties
+      .map((p) =>
+        render(p, {
+          aliases,
+          escape,
+          prefix,
+          parser,
+          options,
+        })
+      )
+      .join(',');
+    const transformations = this.transformations
+      ? ', ' +
+        render(this.transformations, {
+          aliases,
+          escape,
+          prefix,
+          parser,
+          options,
+        })
+      : '';
+    return `groupby((${properties})${transformations})`;
+  }
+
+  clone() {
+    return new GroupBy(
+      Objects.clone(this.properties),
+      Objects.clone(this.transformations)
+    );
+  }
+  resolve(parser: any) {
+    return parser;
+  }
+}
+
+export class Transformations<T> {
+  aggregate(value: Renderable, method: AggregateMethod, alias: string) {
+    return new Aggregate<T>(value, method, alias);
+  }
+  groupby(properties: Renderable[], options?: Renderable) {
+    return new GroupBy<T>(properties, options);
+  }
+  topCount(value: number, field: Renderable, normalize: Normalize = 'none') {
+    return new Function<T>('topcount', [value, field], normalize);
+  }
+
+  topSum(value: number, field: Renderable, normalize: Normalize = 'none') {
+    return new Function<T>('topsum', [value, field], normalize);
+  }
+  topPercent(value: number, field: Renderable, normalize: Normalize = 'none') {
+    return new Function<T>('toppercent', [value, field], normalize);
+  }
+
+  bottomCount(value: number, field: Renderable, normalize: Normalize = 'none') {
+    return new Function<T>('bottomcount', [value, field], normalize);
+  }
+
+  bottomSum(value: number, field: Renderable, normalize: Normalize = 'none') {
+    return new Function<T>('bottomsum', [value, field], normalize);
+  }
+
+  bottomPercent(
+    value: number,
+    field: Renderable,
+    normalize: Normalize = 'none'
+  ) {
+    return new Function<T>('bottompercent', [value, field], normalize);
+  }
+
+  identity() {
+    return new Function<T>('identity', [], 'none');
+  }
+  search(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('search', [left], normalize);
+  }
+  filter(left: any, normalize: Normalize = 'none') {
+    return new Function<T>('filter', [left], normalize);
+  }
+}
+
+export class Type<T> implements Renderable {
+  constructor(
+    protected name: string,
+    protected type: string,
+    protected value?: any
+  ) {}
+  get [Symbol.toStringTag]() {
+    return 'Type';
+  }
+
+  toJson() {
+    return {
+      $type: Types.rawType(this),
+      name: this.name,
+      type: this.type,
+      value: this.value,
+    };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Type<T> {
+    return new Type<T>(
+      json['name'],
+      json['type'],
+      RenderableFactory(json['value'])
+    );
+  }
+
+  render({
+    aliases,
+    escape,
+    prefix,
+    parser,
+    options,
+  }: {
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
+  }): string {
+    let value;
+    if (this.value) {
+      parser = resolve([this.value], parser);
+      let [left, right] = encode([this.value], parser, options);
+
+      value = render(left, { aliases, escape, prefix, parser, options });
+    }
+    return value
+      ? `${this.name}(${value}, '${this.type}')`
+      : `${this.name}('${this.type}')`;
+  }
+
+  clone() {
+    return new Type(this.name, this.type, Objects.clone(this.value));
+  }
+
+  resolve(parser: any) {
+    parser =
+      parser instanceof ODataStructuredTypeFieldParser &&
+      parser.isStructuredType()
+        ? parser.structured()
+        : parser;
+    return parser?.findChildParser((p: any) => p.isTypeOf(this.type));
   }
 }
 
@@ -454,33 +932,54 @@ export class Lambda<T> implements Renderable {
     return 'Lambda';
   }
 
-  toJSON() {
+  toJson() {
     return {
       $type: Types.rawType(this),
       op: this.op,
-      values: this.values,
+      values: this.values.map((v) =>
+        Types.isObject(v) && 'toJson' in v ? v.toJson() : v
+      ),
       alias: this.alias,
     };
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): Lambda<T> {
+    return new Lambda<T>(
+      json['op'],
+      json['values'].map((v: any) => RenderableFactory(v)),
+      json['alias']
+    );
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string {
-    let [left, right] = this.values;
+    parser = resolve(this.values, parser);
+    let [left, right] = encode(this.values, parser, options);
 
-    left = render(left, { aliases, escape, prefix });
-    let alias = this.alias || left.split('/').pop().toLowerCase()[0];
-    return `${left}/${this.op}(${alias}:${render(right, {
-      aliases,
-      escape,
-      prefix: alias,
-    })})`;
+    left = render(left, { aliases, escape, prefix, parser });
+    if (right) {
+      let alias = this.alias || left.split('/').pop().toLowerCase()[0];
+      return `${left}/${this.op}(${alias}:${render(right, {
+        aliases,
+        escape,
+        prefix: alias,
+        options,
+        parser,
+      })})`;
+    } else {
+      return `${left}/${this.op}()`;
+    }
   }
 
   clone() {
@@ -490,15 +989,18 @@ export class Lambda<T> implements Renderable {
       this.alias
     );
   }
+  resolve(parser: any) {
+    return parser;
+  }
 }
 
 export class LambdaOperators<T> {
-  any(field: T, value: any, alias?: string) {
-    return new Lambda('any', [field, value], alias);
+  any(left: T, right: any, alias?: string) {
+    return new Lambda('any', [left, right], alias);
   }
 
-  all(field: T, value: any, alias?: string) {
-    return new Lambda('all', [field, value], alias);
+  all(left: T, right: any, alias?: string) {
+    return new Lambda('all', [left, right], alias);
   }
 }
 
@@ -506,11 +1008,13 @@ export class ODataOperators<T> {}
 export interface ODataOperators<T>
   extends LogicalOperators<T>,
     ArithmeticOperators<T>,
+    GroupingOperators<T>,
     LambdaOperators<T> {}
 
 applyMixins(ODataOperators, [
   LogicalOperators,
   ArithmeticOperators,
+  GroupingOperators,
   LambdaOperators,
 ]);
 export const operators: ODataOperators<any> = new ODataOperators<any>();
@@ -538,8 +1042,22 @@ applyMixins(ODataFunctions, [
 ]);
 export const functions: ODataFunctions<any> = new ODataFunctions<any>();
 
+export class ODataTransformations<T> {}
+export interface ODataTransformations<T> extends Transformations<T> {}
+
+applyMixins(ODataTransformations, [Transformations]);
+export const transformations: ODataTransformations<any> =
+  new ODataTransformations<any>();
+
 export class ODataSyntax<T> {}
-export interface ODataSyntax<T> extends ODataOperators<T>, ODataFunctions<T> {}
-applyMixins(ODataSyntax, [ODataOperators, ODataFunctions]);
+export interface ODataSyntax<T>
+  extends ODataOperators<T>,
+    ODataFunctions<T>,
+    ODataTransformations<T> {}
+applyMixins(ODataSyntax, [
+  ODataOperators,
+  ODataFunctions,
+  ODataTransformations,
+]);
 
 export const syntax: ODataSyntax<any> = new ODataSyntax<any>();

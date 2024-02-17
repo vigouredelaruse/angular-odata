@@ -53,7 +53,7 @@ export abstract class ODataBaseService {
     responseType: 'property' | 'entity' | 'entities' | 'none',
     options: ODataFunctionOptions<R> = {}
   ): Observable<any> {
-    resource.query((q) => q.apply(options));
+    resource.query((q) => q.restore(options));
     return resource.call(params, {
       responseType: responseType as any,
       ...options,
@@ -90,7 +90,7 @@ export abstract class ODataBaseService {
     responseType: 'property' | 'entity' | 'entities' | 'none',
     options: ODataActionOptions<R> = {}
   ): Observable<any> {
-    resource.query((q) => q.apply(options));
+    resource.query((q) => q.restore(options));
     return resource.call(params, {
       responseType: responseType as any,
       ...options,
@@ -112,7 +112,7 @@ export abstract class ODataBaseService {
     responseType: 'entity' | 'entities',
     options: ODataQueryArgumentsOptions<S> = {}
   ): Observable<any> {
-    resource.query((q) => q.apply(options));
+    resource.query((q) => q.restore(options));
     return resource.fetch({ responseType: responseType as any, ...options });
   }
 }

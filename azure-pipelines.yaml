@@ -1,0 +1,45 @@
+# Node.js with Angular
+# Build a Node.js project that uses Angular.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+  persistCredentials: true
+  
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.x'
+  displayName: 'Install Node.js'
+
+
+- script: |
+    git config --global user.email "you@there.com"
+    git config --global user.name "pipeline wizard"
+    git checkout $(Build.SourceBranchName)
+    npm version patch -m "version patch commit"
+    cd ./projects/angular-odata
+    npm version patch -m "version patch commit"
+    cd ../../
+    npm install --save-dev @angular-devkit/build-angular @angular/common --force
+    npm install -g @angular/cli@latest  @angular/platform-browser --force
+    npm install --save-dev @angular/cli@latest  --force
+    npm install --force
+    ng build
+    cd ./dist/angular-odata
+    npm version patch -m "version patch commit"
+    git commit -m "version patch bump commit" 
+    git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push
+  displayName: 'npm install and build'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: './dist/angular-odata'
+    customCommand: 'publish --access-public'
+    customEndpoint: 'vigouredelaruse'

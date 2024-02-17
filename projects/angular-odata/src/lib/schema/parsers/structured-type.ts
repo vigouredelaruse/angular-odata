@@ -13,6 +13,8 @@ import {
   StructuredTypeConfig,
   StructuredTypeFieldConfig,
   StructuredTypeFieldOptions,
+  FieldParser,
+  EdmType,
 } from '../../types';
 import { Objects, Strings, Types } from '../../utils';
 import { ODataAnnotatable } from '../annotation';
@@ -61,19 +63,19 @@ export class ODataReferential {
 
 export class ODataStructuredTypeFieldParser<T>
   extends ODataAnnotatable
-  implements Parser<T>
+  implements FieldParser<T>
 {
   name: string;
   private structuredType: ODataStructuredTypeParser<any>;
-  type: string;
+  type: string | EdmType;
   private parser: Parser<T>;
+  collection: boolean;
+  navigation: boolean;
+  nullable?: boolean;
   default?: any;
   maxLength?: number;
-  collection: boolean;
-  nullable: boolean;
-  navigation: boolean;
   precision?: number;
-  scale?: number;
+  scale?: number | 'variable';
   referentials: ODataReferential[];
   parserOptions?: ParserOptions;
 
@@ -92,7 +94,7 @@ export class ODataStructuredTypeFieldParser<T>
     );
     this.default = field.default;
     this.maxLength = field.maxLength;
-    this.nullable = field.nullable !== undefined ? field.nullable : true;
+    this.nullable = field.nullable ?? true;
     this.collection = Boolean(field.collection);
     this.navigation = Boolean(field.navigation);
     this.precision = field.precision;
@@ -173,7 +175,7 @@ export class ODataStructuredTypeFieldParser<T>
   }
 
   deserialize(value: any, options?: ParserOptions): T {
-    const parserOptions = options || this.parserOptions;
+    const parserOptions = { ...this.parserOptions, ...options };
     if (this.parser instanceof ODataStructuredTypeParser) {
       const parser = this.parser as ODataStructuredTypeParser<T>;
       return Array.isArray(value)
@@ -206,7 +208,7 @@ export class ODataStructuredTypeFieldParser<T>
   }
 
   serialize(value: T, options?: ParserOptions): any {
-    const parserOptions = options || this.parserOptions;
+    const parserOptions = { ...this.parserOptions, ...options };
     if (this.parser instanceof ODataStructuredTypeParser) {
       const parser = this.parser as ODataStructuredTypeParser<T>;
       return Array.isArray(value)
@@ -222,7 +224,7 @@ export class ODataStructuredTypeFieldParser<T>
 
   //#region Encode
   encode(value: T, options?: ParserOptions): string {
-    const parserOptions = options || this.parserOptions;
+    const parserOptions = { ...this.parserOptions, ...options };
     return this.parser.encode(value, {
       field: this,
       ...parserOptions,
@@ -231,11 +233,13 @@ export class ODataStructuredTypeFieldParser<T>
   //#endregion
 
   configure({
-    parserForType,
     options,
+    parserForType,
+    findOptionsForType,
   }: {
-    parserForType: (type: string) => Parser<any>;
     options: ParserOptions;
+    parserForType: (type: string) => Parser<any>;
+    findOptionsForType: (type: string) => any;
   }) {
     this.parserOptions = options;
     this.parser = parserForType(this.type);
@@ -256,34 +260,41 @@ export class ODataStructuredTypeFieldParser<T>
 
     if (
       [
-        'Edm.String',
-        'Edm.Date',
-        'Edm.TimeOfDay',
-        'Edm.DateTimeOffset',
-        'Edm.Guid',
-        'Edm.Binary',
-      ].indexOf(this.type) !== -1
+        EdmType.String,
+        EdmType.Date,
+        EdmType.TimeOfDay,
+        EdmType.DateTimeOffset,
+        EdmType.Guid,
+        EdmType.Binary,
+      ].indexOf(this.type as EdmType) !== -1
     ) {
       schema.type = 'string';
-      if (this.type === 'Edm.Date') schema.format = 'date';
-      else if (this.type === 'Edm.TimeOfDay') schema.format = 'time';
-      else if (this.type === 'Edm.DateTimeOffset') schema.format = 'date-time';
-      else if (this.type === 'Edm.Guid')
+      if (this.type === EdmType.Date) schema.format = 'date';
+      else if (this.type === EdmType.TimeOfDay) schema.format = 'time';
+      else if (this.type === EdmType.DateTimeOffset)
+        schema.format = 'date-time';
+      else if (this.type === EdmType.Guid)
         schema.pattern =
           '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
-      else if (this.type === 'Edm.Binary') schema.contentEncoding = 'base64';
-      else if (this.type === 'Edm.String' && this.maxLength)
+      else if (this.type === EdmType.Binary) schema.contentEncoding = 'base64';
+      else if (this.type === EdmType.String && this.maxLength)
         schema.maxLength = this.maxLength;
     } else if (
-      ['Edm.Int64', 'Edm.Int32', 'Edm.Int16', 'Edm.Byte', 'Edm.SByte'].indexOf(
-        this.type
-      ) !== -1
+      [
+        EdmType.Int64,
+        EdmType.Int32,
+        EdmType.Int16,
+        EdmType.Byte,
+        EdmType.SByte,
+      ].indexOf(this.type as EdmType) !== -1
     ) {
       //TODO: Range
       schema.type = 'integer';
-    } else if (['Edm.Decimal', 'Edm.Double'].indexOf(this.type) !== -1) {
+    } else if (
+      [EdmType.Decimal, EdmType.Double].indexOf(this.type as EdmType) !== -1
+    ) {
       schema.type = 'number';
-    } else if (['Edm.Boolean'].indexOf(this.type) !== -1) {
+    } else if ([EdmType.Boolean].indexOf(this.type as EdmType) !== -1) {
       schema.type = 'boolean';
     }
     if (this.default) schema.default = this.default;
@@ -300,7 +311,9 @@ export class ODataStructuredTypeFieldParser<T>
 
   isKey() {
     return (
-      this.structuredType.keys?.find((k) => k.name === this.name) !== undefined
+      this.structuredType
+        .keys({ include_parents: true })
+        ?.find((k) => k.name === this.name) !== undefined
     );
   }
 
@@ -330,6 +343,16 @@ export class ODataStructuredTypeFieldParser<T>
       throw new Error('Field are not StrucuturedType');
     return this.parser as ODataStructuredTypeParser<T>;
   }
+
+  field<F>(name: string) {
+    if (this.isStructuredType())
+      return (this.parser as ODataStructuredTypeParser<T>).field<F>(
+        name as keyof T
+      );
+    throw new Error(
+      `The field ${this.name} is not related to a StructuredType`
+    );
+  }
 }
 
 export class ODataStructuredTypeParser<T>
@@ -343,8 +366,8 @@ export class ODataStructuredTypeParser<T>
   alias?: string;
   base?: string;
   parent?: ODataStructuredTypeParser<any>;
-  keys?: ODataEntityTypeKey[];
-  fields: ODataStructuredTypeFieldParser<any>[];
+  private _keys?: ODataEntityTypeKey[];
+  private _fields: ODataStructuredTypeFieldParser<any>[] = [];
   parserOptions?: ParserOptions;
 
   constructor(
@@ -359,12 +382,19 @@ export class ODataStructuredTypeParser<T>
     this.namespace = namespace;
     this.alias = alias;
     if (Array.isArray(config.keys))
-      this.keys = config.keys.map((key) => new ODataEntityTypeKey(key));
-    this.fields = Object.entries<StructuredTypeFieldConfig>(
+      this._keys = config.keys.map((key) => new ODataEntityTypeKey(key));
+    Object.entries<StructuredTypeFieldConfig>(
       config.fields as { [P in keyof T]: StructuredTypeFieldConfig }
-    ).map(
-      ([name, config]) => new ODataStructuredTypeFieldParser(name, this, config)
-    );
+    ).forEach(([name, config]) => this.addField(name, config));
+  }
+
+  addField<F>(
+    name: string,
+    config: StructuredTypeFieldConfig
+  ): ODataStructuredTypeFieldParser<F> {
+    const field = new ODataStructuredTypeFieldParser<F>(name, this, config);
+    this._fields.push(field);
+    return field;
   }
 
   /**
@@ -389,6 +419,16 @@ export class ODataStructuredTypeParser<T>
     return false;
   }
 
+  isSupertypeOf(type: string): boolean {
+    return (
+      this.isTypeOf(type) || this.children.some((c) => c.isSupertypeOf(type))
+    );
+  }
+
+  isOpenType() {
+    return this.open;
+  }
+
   findChildParser(
     predicate: (p: ODataStructuredTypeParser<any>) => boolean
   ): ODataStructuredTypeParser<any> | undefined {
@@ -409,10 +449,11 @@ export class ODataStructuredTypeParser<T>
 
   // Deserialize
   deserialize(value: any, options?: ParserOptions): T {
-    const parserOptions = options || this.parserOptions;
-    if (this.parent !== undefined)
-      value = this.parent.deserialize(value, parserOptions);
-    const fields = this.fields.filter(
+    const parserOptions = { ...this.parserOptions, ...options };
+    const fields = this.fields({
+      include_navigation: true,
+      include_parents: true,
+    }).filter(
       (f) =>
         f.name in value && value[f.name] !== undefined && value[f.name] !== null
     );
@@ -429,11 +470,12 @@ export class ODataStructuredTypeParser<T>
   }
 
   // Serialize
-  serialize(value: T, options?: ParserOptions): any {
-    const parserOptions = options || this.parserOptions;
-    if (this.parent !== undefined)
-      value = this.parent.serialize(value, parserOptions);
-    const fields = this.fields.filter(
+  serialize(value: Partial<T>, options?: ParserOptions): any {
+    const parserOptions = { ...this.parserOptions, ...options };
+    const fields = this.fields({
+      include_navigation: true,
+      include_parents: true,
+    }).filter(
       (f) =>
         f.name in value &&
         (value as any)[f.name] !== undefined &&
@@ -453,16 +495,18 @@ export class ODataStructuredTypeParser<T>
 
   // Encode
   encode(value: T, options?: ParserOptions): any {
-    const parserOptions = options || this.parserOptions;
+    const parserOptions = { ...this.parserOptions, ...options };
     return raw(JSON.stringify(this.serialize(value, parserOptions)));
   }
 
   configure({
-    parserForType,
     options,
+    parserForType,
+    findOptionsForType,
   }: {
-    parserForType: (type: string) => Parser<any>;
     options: ParserOptions;
+    parserForType: (type: string) => Parser<any>;
+    findOptionsForType: (type: string) => any;
   }) {
     this.parserOptions = options;
     if (this.base) {
@@ -470,44 +514,159 @@ export class ODataStructuredTypeParser<T>
       parent.children.push(this);
       this.parent = parent;
     }
-    this.fields.forEach((f) => f.configure({ parserForType, options }));
+    this._fields.forEach((f) =>
+      f.configure({ options, parserForType, findOptionsForType })
+    );
   }
 
-  resolveKey(value: any): any {
-    let key = this.parent?.resolveKey(value) || {};
-    if (Array.isArray(this.keys) && this.keys.length > 0) {
-      for (var k of this.keys) {
-        let v = value as any;
-        let structured = this as ODataStructuredTypeParser<any> | undefined;
-        let field: ODataStructuredTypeFieldParser<any> | undefined;
-        for (let name of k.name.split('/')) {
-          if (structured === undefined) break;
-          field = structured.fields.find((f) => f.name === name);
-          if (field !== undefined) {
-            v = Types.isPlainObject(v) ? v[field.name] : v;
-            structured = field.isStructuredType()
-              ? field.structured()
-              : undefined;
-          }
-        }
-        if (field !== undefined && v !== undefined) {
-          key[k.alias || field.name] = field.encode(v);
+  /**
+   * Returns all fields of the structured type.
+   * @param include_navigation Include navigation properties in the result.
+   * @param include_parents Include the parent types in the result.
+   * @returns All fields of the structured type.
+   */
+  fields({
+    include_navigation,
+    include_parents,
+  }: {
+    include_parents: boolean;
+    include_navigation: boolean;
+  }): ODataStructuredTypeFieldParser<any>[] {
+    return [
+      ...(include_parents && this.parent !== undefined
+        ? this.parent.fields({ include_parents, include_navigation })
+        : []),
+      ...this._fields.filter(
+        (field) => include_navigation || !field.navigation
+      ),
+    ];
+  }
+
+  /**
+   * Returns the keys of the structured type.
+   * @param include_parents Include the parent fields
+   * @returns The keys of the structured type
+   */
+  keys({
+    include_parents,
+  }: {
+    include_parents: boolean;
+  }): ODataEntityTypeKey[] {
+    return [
+      ...(include_parents && this.parent !== undefined
+        ? this.parent.keys({ include_parents })
+        : []),
+      ...(this._keys || []),
+    ];
+  }
+
+  isEntityType(): boolean {
+    return (
+      this._keys !== undefined ||
+      (this.parent !== undefined && this.parent.isEntityType())
+    );
+  }
+
+  isComplexType(): boolean {
+    return !this.isEntityType();
+  }
+
+  /**
+   * Find the field parser for the given field name.
+   * @param name Name of the field
+   * @returns The field parser
+   */
+  field<F>(name: keyof T): ODataStructuredTypeFieldParser<F> {
+    let field = this.fields({
+      include_parents: true,
+      include_navigation: true,
+    }).find((field: ODataStructuredTypeFieldParser<F>) => field.name === name);
+    //Throw error if not found
+    if (field === undefined)
+      throw new Error(`${this.name} has no field named ${String(name)}`);
+    return field;
+  }
+
+  /**
+   * Picks the fields from attributes.
+   * @param attrs
+   * @param include_parents Include the parent fields
+   * @param include_navigation Include the navigation fields
+   * @param include_etag Include the etag field
+   * @returns The picked fields
+   */
+  pick(
+    attrs: { [name: string]: any },
+    {
+      include_parents = true,
+      include_navigation = false,
+      include_etag = true,
+      options,
+    }: {
+      include_parents?: boolean;
+      include_navigation?: boolean;
+      include_etag?: boolean;
+      options?: ParserOptions;
+    } = {}
+  ): Partial<T> {
+    const parserOptions = options || this.parserOptions;
+    const names = this.fields({ include_parents, include_navigation }).map(
+      (f) => f.name
+    );
+    return Object.keys(attrs)
+      .filter(
+        (key) =>
+          names.indexOf(key) !== -1 ||
+          (key ==
+            ODataHelper[parserOptions?.version || DEFAULT_VERSION].ODATA_ETAG &&
+            include_etag)
+      )
+      .reduce((acc, key) => Object.assign(acc, { [key]: attrs[key] }), {});
+  }
+
+  resolveKey(
+    value: any,
+    {
+      resolve = true,
+      single = true,
+    }: { resolve?: boolean; single?: boolean } = {}
+  ): any {
+    const keyTypes = this.keys({ include_parents: true });
+    const key = new Map<string, any>();
+    for (var kt of keyTypes) {
+      let v = value as any;
+      let structured = this as ODataStructuredTypeParser<any> | undefined;
+      let field: ODataStructuredTypeFieldParser<any> | undefined;
+      for (let name of kt.name.split('/')) {
+        if (structured === undefined) break;
+        field = structured
+          .fields({ include_navigation: false, include_parents: true })
+          .find((f: ODataStructuredTypeFieldParser<any>) => f.name === name);
+        if (field !== undefined) {
+          v = Types.isPlainObject(v) ? v[field.name] : v;
+          structured = field.isStructuredType()
+            ? field.structured()
+            : undefined;
         }
       }
+      if (field !== undefined && v !== undefined) {
+        key.set(kt.alias || field.name, field.encode(v));
+      }
     }
-    if (Types.isEmpty(key)) return undefined;
-    return Objects.resolveKey(key);
+    if (key.size === 0) return undefined;
+    return resolve
+      ? Objects.resolveKey(key, { single })
+      : Object.fromEntries(key);
   }
 
   defaults(): { [name: string]: any } {
-    let value = this.parent?.defaults() || {};
-    let fields = this.fields.filter(
-      (f) => f.default !== undefined || f.isStructuredType()
-    );
+    let fields = this.fields({
+      include_navigation: false,
+      include_parents: true,
+    }).filter((f) => f.default !== undefined || f.isStructuredType());
     return {
-      ...value,
       ...fields.reduce((acc, f) => {
-        let value = f.isStructuredType()
+        let value: any = f.isStructuredType()
           ? f.structured().defaults()
           : f.default;
         return Types.isEmpty(value) ? acc : { ...acc, [f.name]: value };
@@ -517,7 +676,7 @@ export class ODataStructuredTypeParser<T>
 
   // Json Schema
   toJsonSchema(options: JsonSchemaOptions<T> = {}) {
-    let schema: any = this.parent?.toJsonSchema(options) || {
+    let schema: any = {
       $schema: 'http://json-schema.org/draft-07/schema#',
       $id: `${this.namespace}.${this.name}`,
       title: this.titleize(DESCRIPTION),
@@ -526,7 +685,10 @@ export class ODataStructuredTypeParser<T>
       properties: {},
       required: [],
     };
-    const fields = this.fields.filter(
+    const fields = this.fields({
+      include_navigation: true,
+      include_parents: true,
+    }).filter(
       (f) =>
         (!f.navigation || (options.expand && f.name in options.expand)) &&
         (!options.select || (<string[]>options.select).indexOf(f.name) !== -1)
@@ -576,9 +738,11 @@ export class ODataStructuredTypeParser<T>
       navigation?: boolean;
     } = {}
   ): { [name: string]: any } | undefined {
-    const errors = (this.parent?.validate(attrs, { method, navigation }) ||
-      {}) as { [name: string]: any };
-    const fields = this.fields.filter((f) => !f.navigation || navigation);
+    const errors = {} as { [name: string]: any };
+    const fields = this.fields({
+      include_navigation: true,
+      include_parents: true,
+    }).filter((f) => !f.navigation || navigation);
     for (var field of fields) {
       const value = attrs[field.name as keyof T];
       const errs = field.validate(value, { method, navigation });

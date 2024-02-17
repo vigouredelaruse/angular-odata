@@ -1,5 +1,4 @@
 import { ExpandExpression } from './expand';
-import { SearchExpression } from './search';
 
 describe('OData search builder', () => {
   interface Pet {
@@ -34,16 +33,16 @@ describe('OData search builder', () => {
   describe('base condition', () => {
     describe('as factory function', () => {
       it('field', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ s, e }) =>
-          e().field(s.Car)
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
+          e().field(t.Car)
         );
 
         expect(compare1.render()).toBe('Car');
       });
 
       it('navigation', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ s, e }) =>
-          e().field(s.Car?.Model)
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
+          e().field(t.Car?.Model)
         );
 
         expect(compare1.render()).toBe('Car/Model');
@@ -54,11 +53,11 @@ describe('OData search builder', () => {
   describe('nested condition', () => {
     describe('as factory function', () => {
       it('field', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ s, e }) =>
-          e().field(s.Car, (f) => {
-            f.expand<Car>(({ e, s }) => e().field(s.Model));
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
+          e().field(t.Car, (f) => {
+            f.expand(({ e, t }) => e().field(t.Model));
             f.skip(1);
-            f.filter<Car>(({ e, s }) => e().eq(s.Year, 2000));
+            f.filter(({ e, t }) => e().eq(t.Year, 2000));
           })
         );
 
@@ -68,9 +67,9 @@ describe('OData search builder', () => {
       });
 
       it('navigation', () => {
-        const compare1 = ExpandExpression.expand<Person>(({ s, e }) =>
-          e().field(s.Car?.Model, (f) => {
-            f.filter<Model>(({ e, s }) => e().in(s.Name, ['BMW', 'Audi']));
+        const compare1 = ExpandExpression.factory<Person>(({ e, t }) =>
+          e().field(t.Car.Model!, (f) => {
+            f.filter(({ e, t }) => e().in(t.Name, ['BMW', 'Audi']));
             f.skip(1);
             f.top(1);
           })

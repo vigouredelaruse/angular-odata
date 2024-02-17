@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -49,11 +107,11 @@
 
 
 <ol class="breadcrumb">
-  <li>Miscellaneous</li>
-  <li>Type aliases</li>
+  <li class="breadcrumb-item">Miscellaneous</li>
+  <li class="breadcrumb-item">Type aliases</li>
 </ol>
 
-<section>
+<section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -74,6 +132,12 @@
                         </li>
                         <li>
                             <a href="#CallableConfig" title="projects/angular-odata/src/lib/types.ts" ><b>CallableConfig</b>&nbsp;&nbsp;&nbsp;(projects/.../types.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ComputeExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/compute.ts" ><b>ComputeExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../compute.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CountExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/count.ts" ><b>CountExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../count.ts)</a>
                         </li>
                         <li>
                             <a href="#Duration" title="projects/angular-odata/src/lib/utils/durations.ts" ><b>Duration</b>&nbsp;&nbsp;&nbsp;(projects/.../durations.ts)</a>
@@ -97,6 +161,9 @@
                             <a href="#Expand" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>Expand</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
                         </li>
                         <li>
+                            <a href="#ExpandExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/expand.ts" ><b>ExpandExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../expand.ts)</a>
+                        </li>
+                        <li>
                             <a href="#ExpandObject" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>ExpandObject</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
                         </li>
                         <li>
@@ -113,6 +180,9 @@
                         </li>
                         <li>
                             <a href="#FilterConnector" title="projects/angular-odata/src/lib/resources/query/expressions/filter.ts" ><b>FilterConnector</b>&nbsp;&nbsp;&nbsp;(projects/.../filter.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#FilterExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/filter.ts" ><b>FilterExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../filter.ts)</a>
                         </li>
                         <li>
                             <a href="#FilterType" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>FilterType</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
@@ -145,6 +215,12 @@
                             <a href="#NestedExpandOptions" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>NestedExpandOptions</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
                         </li>
                         <li>
+                            <a href="#NestedOrderBy" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>NestedOrderBy</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Normalize" title="projects/angular-odata/src/lib/resources/query/expressions/syntax.ts" ><b>Normalize</b>&nbsp;&nbsp;&nbsp;(projects/.../syntax.ts)</a>
+                        </li>
+                        <li>
                             <a href="#ODataActionOptions" title="projects/angular-odata/src/lib/resources/types/options.ts" ><b>ODataActionOptions</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
                         </li>
                         <li>
@@ -172,16 +248,7 @@
                             <a href="#ODataModelEntry" title="projects/angular-odata/src/lib/models/options.ts" ><b>ODataModelEntry</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
                         </li>
                         <li>
-                            <a href="#ODataModelEventType" title="projects/angular-odata/src/lib/models/options.ts" ><b>ODataModelEventType</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
-                        </li>
-                        <li>
                             <a href="#ODataModelFieldOptions" title="projects/angular-odata/src/lib/models/options.ts" ><b>ODataModelFieldOptions</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
-                        </li>
-                        <li>
-                            <a href="#ODataModelRelation" title="projects/angular-odata/src/lib/models/options.ts" ><b>ODataModelRelation</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
-                        </li>
-                        <li>
-                            <a href="#ODataNoneOptions" title="projects/angular-odata/src/lib/resources/types/options.ts" ><b>ODataNoneOptions</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
                         </li>
                         <li>
                             <a href="#ODataOptions" title="projects/angular-odata/src/lib/resources/types/options.ts" ><b>ODataOptions</b>&nbsp;&nbsp;&nbsp;(projects/.../options.ts)</a>
@@ -208,6 +275,9 @@
                             <a href="#OrderBy" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>OrderBy</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
                         </li>
                         <li>
+                            <a href="#OrderByExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/orderby.ts" ><b>OrderByExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../orderby.ts)</a>
+                        </li>
+                        <li>
                             <a href="#OrderByObject" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>OrderByObject</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
                         </li>
                         <li>
@@ -229,7 +299,13 @@
                             <a href="#SearchConnector" title="projects/angular-odata/src/lib/resources/query/expressions/search.ts" ><b>SearchConnector</b>&nbsp;&nbsp;&nbsp;(projects/.../search.ts)</a>
                         </li>
                         <li>
+                            <a href="#SearchExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/search.ts" ><b>SearchExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../search.ts)</a>
+                        </li>
+                        <li>
                             <a href="#Select" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>Select</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SelectExpressionBuilder" title="projects/angular-odata/src/lib/resources/query/expressions/select.ts" ><b>SelectExpressionBuilder</b>&nbsp;&nbsp;&nbsp;(projects/.../select.ts)</a>
                         </li>
                         <li>
                             <a href="#SelectType" title="projects/angular-odata/src/lib/resources/query/builder.ts" ><b>SelectType</b>&nbsp;&nbsp;&nbsp;(projects/.../builder.ts)</a>
@@ -257,7 +333,7 @@
 </section>
 
     <h3>projects/angular-odata/src/lib/resources/query/builder.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -284,7 +360,7 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code>ExpandType&lt;T&gt; | ExpandType&lt;T&gt;[]</code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" >ExpandType&lt;T&gt; | ExpandType&lt;T&gt;[]</a></code>
 </code>
                 </td>
             </tr>
@@ -348,7 +424,7 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code>FilterType | FilterType[]</code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" >FilterType | FilterType[]</a></code>
 </code>
                 </td>
             </tr>
@@ -406,13 +482,29 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
+                    <a name="NestedOrderBy"></a>
+                    <span class="name "><b>NestedOrderBy</b><a href="#NestedOrderBy"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
                     <a name="OrderBy"></a>
                     <span class="name "><b>OrderBy</b><a href="#OrderBy"><span class="icon ion-ios-link"></span></a></span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code>OrderByType&lt;T&gt; | OrderByType&lt;T&gt;[]</code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" >OrderByType&lt;T&gt; | OrderByType&lt;T&gt;[]</a></code>
 </code>
                 </td>
             </tr>
@@ -428,7 +520,7 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code> | </code>
+                    <code>    <code> |  | NestedOrderBy&lt;T&gt;</code>
 </code>
                 </td>
             </tr>
@@ -492,7 +584,7 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code>SelectType&lt;T&gt; | SelectType&lt;T&gt;[]</code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" >SelectType&lt;T&gt; | SelectType&lt;T&gt;[]</a></code>
 </code>
                 </td>
             </tr>
@@ -556,14 +648,14 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>        <code><a href="../miscellaneous/typealiases.html#QueryCustomType" target="_self" >string | Date | number | boolean | QueryCustomType</a></code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" >string | Date | number | boolean | QueryCustomType</a></code>
 </code>
                 </td>
             </tr>
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/types.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -804,8 +896,44 @@
             </tr>
         </tbody>
     </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/compute.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ComputeExpressionBuilder"></a>
+                    <span class="name "><b>ComputeExpressionBuilder</b><a href="#ComputeExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/count.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CountExpressionBuilder"></a>
+                    <span class="name "><b>CountExpressionBuilder</b><a href="#CountExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </section>    <h3>projects/angular-odata/src/lib/utils/durations.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -823,7 +951,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/resource.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -834,14 +962,32 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>        <code><a href="../miscellaneous/typealiases.html#QueryCustomType" target="_self" > | QueryCustomType | string | number</a></code>
+                    <code>        <code><a href="../classes/Type.html" target="_self" > | QueryCustomType | string | number</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/expand.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ExpandExpressionBuilder"></a>
+                    <span class="name "><b>ExpandExpressionBuilder</b><a href="#ExpandExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
 </code>
                 </td>
             </tr>
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/filter.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -858,8 +1004,24 @@
             </tr>
         </tbody>
     </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="FilterExpressionBuilder"></a>
+                    <span class="name "><b>FilterExpressionBuilder</b><a href="#FilterExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </section>    <h3>projects/angular-odata/src/lib/schema/parsers/structured-type.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -941,7 +1103,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/models/options.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -994,22 +1156,6 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="ODataModelEventType"></a>
-                    <span class="name "><b>ODataModelEventType</b><a href="#ODataModelEventType"><span class="icon ion-ios-link"></span></a></span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-                    <code>    <code>&quot;change&quot; | &quot;reset&quot; | &quot;update&quot; | &quot;destroy&quot; | &quot;add&quot; | &quot;remove&quot; | &quot;invalid&quot; | &quot;request&quot; | &quot;sync&quot; | &quot;attach&quot;</code>
-</code>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
                     <a name="ODataModelFieldOptions"></a>
                     <span class="name "><b>ODataModelFieldOptions</b><a href="#ODataModelFieldOptions"><span class="icon ion-ios-link"></span></a></span>
                 </td>
@@ -1022,24 +1168,26 @@
             </tr>
         </tbody>
     </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/syntax.ts</h3>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="ODataModelRelation"></a>
-                    <span class="name "><b>ODataModelRelation</b><a href="#ODataModelRelation"><span class="icon ion-ios-link"></span></a></span>
+                    <a name="Normalize"></a>
+                    <span class="name "><b>Normalize</b><a href="#Normalize"><span class="icon ion-ios-link"></span></a></span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <code>    <code>literal type</code>
+                    <code>    <code>&quot;all&quot; | &quot;right&quot; | &quot;left&quot; | &quot;none&quot;</code>
 </code>
                 </td>
             </tr>
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/types/options.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1108,22 +1256,6 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="ODataNoneOptions"></a>
-                    <span class="name "><b>ODataNoneOptions</b><a href="#ODataNoneOptions"><span class="icon ion-ios-link"></span></a></span>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-4">
-                    <code>    <code></code>
-</code>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
                     <a name="ODataOptions"></a>
                     <span class="name "><b>ODataOptions</b><a href="#ODataOptions"><span class="icon ion-ios-link"></span></a></span>
                 </td>
@@ -1169,7 +1301,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/helper.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1187,7 +1319,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/responses/types.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1237,7 +1369,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/query/options.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1255,7 +1387,7 @@
         </tbody>
     </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/path/segments.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1272,8 +1404,26 @@
             </tr>
         </tbody>
     </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/orderby.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="OrderByExpressionBuilder"></a>
+                    <span class="name "><b>OrderByExpressionBuilder</b><a href="#OrderByExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/search.ts</h3>
-    <section>
+    <section data-compodoc="block-typealias">
     <table class="table table-sm table-bordered">
         <tbody>
             <tr>
@@ -1285,6 +1435,40 @@
             <tr>
                 <td class="col-md-4">
                     <code>    <code>&quot;AND&quot; | &quot;OR&quot;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SearchExpressionBuilder"></a>
+                    <span class="name "><b>SearchExpressionBuilder</b><a href="#SearchExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>projects/angular-odata/src/lib/resources/query/expressions/select.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SelectExpressionBuilder"></a>
+                    <span class="name "><b>SelectExpressionBuilder</b><a href="#SelectExpressionBuilder"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
 </code>
                 </td>
             </tr>

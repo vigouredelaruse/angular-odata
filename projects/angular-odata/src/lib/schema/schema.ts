@@ -1,5 +1,5 @@
 import { ODataApi } from '../api';
-import { Parser, SchemaConfig } from '../types';
+import { Parser, ParserOptions, SchemaConfig } from '../types';
 import { OData } from '../utils/odata';
 import { ODataAnnotatable } from './annotation';
 import { ODataCallable } from './callable';
@@ -23,16 +23,16 @@ export class ODataSchema extends ODataAnnotatable {
     this.namespace = config.namespace;
     this.alias = config.alias;
     this.enums = (config.enums || []).map(
-      (config) => new ODataEnumType(config, this)
+      (config) => new ODataEnumType(config, this),
     );
     this.entities = (config.entities || []).map(
-      (config) => new ODataStructuredType(config, this)
+      (config) => new ODataStructuredType(config, this),
     );
     this.callables = OData.mergeCallableParameters(config.callables || []).map(
-      (config) => new ODataCallable(config, this)
+      (config) => new ODataCallable(config, this),
     );
     this.containers = (config.containers || []).map(
-      (config) => new ODataEntityContainer(config, this)
+      (config) => new ODataEntityContainer(config, this),
     );
   }
 
@@ -46,7 +46,7 @@ export class ODataSchema extends ODataAnnotatable {
   get entitySets() {
     return this.containers.reduce(
       (acc, container) => [...acc, ...container.entitySets],
-      [] as ODataEntitySet[]
+      [] as ODataEntitySet[],
     );
   }
 
@@ -90,19 +90,25 @@ export class ODataSchema extends ODataAnnotatable {
   //#endregion
 
   configure({
+    options,
     parserForType,
     findOptionsForType,
   }: {
+    options: ParserOptions;
     parserForType: (type: string) => Parser<any>;
     findOptionsForType: (type: string) => any;
   }) {
     // Configure Enums
-    this.enums.forEach((enu) => enu.configure());
+    this.enums.forEach((enu) =>
+      enu.configure({ options, parserForType, findOptionsForType }),
+    );
     // Configure Entities
     this.entities.forEach((config) =>
-      config.configure({ parserForType, findOptionsForType })
+      config.configure({ options, parserForType, findOptionsForType }),
     );
     // Configure callables
-    this.callables.forEach((callable) => callable.configure({ parserForType }));
+    this.callables.forEach((callable) =>
+      callable.configure({ options, parserForType, findOptionsForType }),
+    );
   }
 }

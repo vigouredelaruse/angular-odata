@@ -1,17 +1,17 @@
-import { QueryOptionNames } from '../../../types';
+import { Parser, ParserOptions, QueryOption } from '../../../types';
 import { Objects, Types } from '../../../utils';
-import type { QueryCustomType } from '../builder';
+import type { QueryCustomType, Unpacked } from '../builder';
 import { Expression } from './base';
-import { FilterConnector, FilterExpression } from './filter';
-import { OrderByExpression } from './orderby';
-import { SearchConnector, SearchExpression } from './search';
-import { SelectExpression } from './select';
+import { FilterExpression, FilterExpressionBuilder } from './filter';
+import { OrderByExpression, OrderByExpressionBuilder } from './orderby';
+import { SearchExpression, SearchExpressionBuilder } from './search';
+import { SelectExpression, SelectExpressionBuilder } from './select';
 import {
-  Field,
-  ODataFunctions,
-  ODataOperators,
+  FieldFactory,
   render,
   Renderable,
+  RenderableFactory,
+  resolve,
 } from './syntax';
 
 export class ExpandField<T> implements Renderable {
@@ -24,9 +24,9 @@ export class ExpandField<T> implements Renderable {
     return 'ExpandField';
   }
 
-  toJSON() {
+  toJson() {
     return {
-      field: this.field.toJSON(),
+      field: this.field.toJson(),
     };
   }
 
@@ -34,30 +34,48 @@ export class ExpandField<T> implements Renderable {
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
     aliases?: QueryCustomType[];
     escape?: boolean;
     prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   }): string {
-    const params: { [key: string]: string } = [
-      QueryOptionNames.select,
-      QueryOptionNames.expand,
-      QueryOptionNames.filter,
-      QueryOptionNames.search,
-      QueryOptionNames.orderBy,
-      QueryOptionNames.skip,
-      QueryOptionNames.top,
-      QueryOptionNames.levels,
+    parser = resolve([this.field], parser);
+    const params: { [name: string]: string } = [
+      QueryOption.select,
+      QueryOption.expand,
+      QueryOption.filter,
+      QueryOption.search,
+      QueryOption.orderBy,
+      QueryOption.skip,
+      QueryOption.top,
+      QueryOption.count,
+      QueryOption.levels,
     ]
       .filter((key) => !Types.isEmpty(this.values[key]))
       .reduce((acc, key) => {
-        let value = this.values[key];
+        let value: any = this.values[key];
         if (Types.rawType(value).endsWith('Expression')) {
-          value = (value as Expression<T>).render({ aliases, prefix, escape });
+          value = (value as Expression<T>).render({
+            aliases,
+            prefix,
+            escape,
+            parser,
+            options,
+          });
         }
         return Object.assign(acc, { [key]: value });
       }, {});
-    let expand = `${render(this.field, { aliases, escape, prefix })}`;
+    let expand = `${render(this.field, {
+      aliases,
+      escape,
+      prefix,
+      parser,
+      options,
+    })}`;
     if (!Types.isEmpty(params)) {
       expand = `${expand}(${Object.keys(params)
         .map((key) => `$${key}=${params[key]}`)
@@ -72,92 +90,98 @@ export class ExpandField<T> implements Renderable {
         Object.assign(acc, { [key]: Objects.clone(this.values[key]) }),
       {}
     );
-    return new ExpandField(this.field.clone(), values);
+    return new ExpandField<T>(
+      typeof this.field === 'string' ? this.field : this.field.clone(),
+      values
+    );
   }
 
-  select<T extends object>(
+  resolve(parser: any) {
+    return parser;
+  }
+
+  select(
     opts: (
-      builder: { s: T; e: () => SelectExpression<T> },
+      builder: SelectExpressionBuilder<T>,
       current?: SelectExpression<T>
     ) => SelectExpression<T>
   ): SelectExpression<T> {
     return this.option(
-      QueryOptionNames.select,
-      SelectExpression.select<T>(opts, this.values[QueryOptionNames.select])
+      QueryOption.select,
+      SelectExpression.factory<T>(opts, this.values[QueryOption.select])
     );
   }
 
-  expand<T extends object>(
+  expand(
     opts: (
-      builder: { s: T; e: () => ExpandExpression<T> },
+      builder: ExpandExpressionBuilder<T>,
       current?: ExpandExpression<T>
     ) => ExpandExpression<T>
   ) {
     return this.option(
-      QueryOptionNames.expand,
-      ExpandExpression.expand<T>(opts, this.values[QueryOptionNames.expand])
+      QueryOption.expand,
+      ExpandExpression.factory<T>(opts, this.values[QueryOption.expand])
     );
   }
 
-  filter<T extends object>(
+  filter(
     opts: (
-      builder: {
-        s: T;
-        e: (connector?: FilterConnector) => FilterExpression<T>;
-        o: ODataOperators<T>;
-        f: ODataFunctions<T>;
-      },
+      builder: FilterExpressionBuilder<T>,
       current?: FilterExpression<T>
     ) => FilterExpression<T>
   ) {
     return this.option(
-      QueryOptionNames.filter,
-      FilterExpression.filter<T>(opts, this.values[QueryOptionNames.filter])
+      QueryOption.filter,
+      FilterExpression.factory<T>(opts, this.values[QueryOption.filter])
     );
   }
 
-  search<T extends object>(
-    opts: (builder: {
-      e: (connector?: SearchConnector) => SearchExpression<T>;
-    }) => SearchExpression<T>
-  ) {
+  search(opts: (builder: SearchExpressionBuilder<T>) => SearchExpression<T>) {
     return this.option(
-      QueryOptionNames.search,
-      SearchExpression.search<T>(opts, this.values[QueryOptionNames.search])
+      QueryOption.search,
+      SearchExpression.factory<T>(opts, this.values[QueryOption.search])
     );
   }
 
-  orderBy<T extends object>(
+  orderBy(
     opts: (
-      builder: { s: T; e: () => OrderByExpression<T> },
+      builder: OrderByExpressionBuilder<T>,
       current?: OrderByExpression<T>
     ) => OrderByExpression<T>
   ) {
     return this.option(
-      QueryOptionNames.orderBy,
-      OrderByExpression.orderBy<T>(opts, this.values[QueryOptionNames.orderBy])
+      QueryOption.orderBy,
+      OrderByExpression.factory<T>(opts, this.values[QueryOption.orderBy])
     );
   }
 
   skip(n: number) {
-    return this.option<number>(QueryOptionNames.skip, n);
+    return this.option<number>(QueryOption.skip, n);
   }
 
   top(n: number) {
-    return this.option<number>(QueryOptionNames.top, n);
+    return this.option<number>(QueryOption.top, n);
   }
 
   levels(n: number | 'max') {
-    return this.option<number | 'max'>(QueryOptionNames.levels, n);
+    return this.option<number | 'max'>(QueryOption.levels, n);
+  }
+
+  count() {
+    return this.option<boolean>(QueryOption.count, true);
   }
 
   // Option Handler
-  private option<O>(name: QueryOptionNames, opts?: O) {
+  private option<O>(name: QueryOption, opts?: O) {
     if (opts !== undefined) this.values[name] = opts;
-    return this.values[name];
+    return this.values[name] as O;
   }
 }
 
+export type ExpandExpressionBuilder<T> = {
+  t: Required<T>;
+  e: () => ExpandExpression<T>;
+};
 export class ExpandExpression<T> extends Expression<T> {
   constructor({
     children,
@@ -167,46 +191,57 @@ export class ExpandExpression<T> extends Expression<T> {
     super({ children });
   }
 
-  static e<T>() {
-    return new ExpandExpression<T>();
+  get [Symbol.toStringTag]() {
+    return 'ExpandExpression';
   }
 
-  static s<T extends object>(): T {
-    return Field.factory<T>();
-  }
-
-  static expand<T extends object>(
+  static factory<T>(
     opts: (
-      builder: { s: T; e: () => ExpandExpression<T> },
+      builder: ExpandExpressionBuilder<T>,
       current?: ExpandExpression<T>
     ) => ExpandExpression<T>,
     current?: ExpandExpression<T>
   ): ExpandExpression<T> {
     return opts(
       {
-        s: ExpandExpression.s<T>(),
-        e: ExpandExpression.e,
+        t: FieldFactory<Required<T>>(),
+        e: () => new ExpandExpression<T>(),
       },
       current
     ) as ExpandExpression<T>;
+  }
+
+  override toJson() {
+    const json = super.toJson();
+    return Object.assign(json, {});
+  }
+
+  static fromJson<T>(json: { [name: string]: any }): ExpandExpression<T> {
+    return new ExpandExpression<T>({
+      children: json['children'].map((c: any) => RenderableFactory(c)),
+    });
   }
 
   render({
     aliases,
     escape,
     prefix,
+    parser,
+    options,
   }: {
-    aliases?: QueryCustomType[] | undefined;
-    escape?: boolean | undefined;
-    prefix?: string | undefined;
+    aliases?: QueryCustomType[];
+    escape?: boolean;
+    prefix?: string;
+    parser?: Parser<T>;
+    options?: ParserOptions;
   } = {}): string {
     return this._children
-      .map((n) => n.render({ aliases, escape, prefix }))
+      .map((n) => n.render({ aliases, escape, prefix, parser, options }))
       .join(',');
   }
 
   clone() {
-    return new ExpandExpression({
+    return new ExpandExpression<T>({
       children: this._children.map((c) => c.clone()),
     });
   }
@@ -216,8 +251,11 @@ export class ExpandExpression<T> extends Expression<T> {
     return this;
   }
 
-  field<F>(field: F, opts?: (e: ExpandField<F>) => void): ExpandExpression<F> {
-    let node = new ExpandField<F>(field);
+  field<F>(
+    field: F,
+    opts?: (e: ExpandField<Unpacked<F>>) => void
+  ): ExpandExpression<T> {
+    let node = new ExpandField<Unpacked<F>>(field);
     if (opts !== undefined) opts(node);
     return this._add(node);
   }

@@ -1,5 +1,4 @@
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { ODataApi } from '../api';
 import {
   DEFAULT_VERSION,
@@ -11,13 +10,8 @@ import { ODataHelper } from '../helper';
 import { ODataCollection, ODataModel } from '../models';
 import { ODataStructuredType } from '../schema';
 import { ODataSchemaElement } from '../schema/element';
-import {
-  ParserOptions,
-  Parser,
-  QueryOptionNames,
-  PathSegmentNames,
-} from '../types';
-import { Http, Objects, Types } from '../utils/index';
+import { ParserOptions, Parser, QueryOption, PathSegment } from '../types';
+import { Objects, Types } from '../utils/index';
 import { ODataPathSegments, ODataPathSegmentsHandler } from './path';
 import {
   isQueryCustomType,
@@ -25,11 +19,9 @@ import {
   ODataQueryOptionsHandler,
   QueryCustomType,
 } from './query';
-import { ODataRequest } from './request';
 import {
   ODataEntitiesAnnotations,
   ODataEntityAnnotations,
-  ODataResponse,
 } from './responses/index';
 import { ODataOptions } from './types';
 
@@ -60,8 +52,8 @@ export class ODataResource<T> {
     } = {}
   ) {
     this.api = api;
-    this.pathSegments = segments || new ODataPathSegments();
-    this.queryOptions = query || new ODataQueryOptions();
+    this.pathSegments = segments ?? new ODataPathSegments();
+    this.queryOptions = query ?? new ODataQueryOptions();
     this.schema = schema;
   }
 
@@ -94,7 +86,7 @@ export class ODataResource<T> {
   }
 
   hasEntityKey() {
-    return Boolean(this.pathSegments.get(PathSegmentNames.entitySet)?.hasKey());
+    return Boolean(this.pathSegments.get(PathSegment.entitySet)?.hasKey());
   }
 
   clearKey() {
@@ -104,39 +96,46 @@ export class ODataResource<T> {
   //#region Models
   asModel<M extends ODataModel<T>>(
     entity?: Partial<T> | { [name: string]: any },
-    { annots, reset }: { annots?: ODataEntityAnnotations; reset?: boolean } = {}
+    { annots }: { annots?: ODataEntityAnnotations<T> } = {}
   ): M {
+    const reset = annots !== undefined;
     let resource: ODataResource<T> = this as ODataResource<T>;
     const type = annots?.type || this.returnType();
     if (type === undefined) throw Error('');
-    const Model = this.api.modelForType(type);
+    const ModelType = this.api.modelForType(type);
     let entitySet = annots?.entitySet;
     if (entitySet !== undefined) {
       resource = this.api.entitySet<T>(entitySet).entity(entity as Partial<T>);
-      resource.query((q) => q.apply(this.queryOptions.toQueryArguments()));
+      resource.query((q) => q.restore(this.queryOptions.toQueryArguments()));
     }
-    return new Model(entity, { resource, annots, reset }) as M;
+    return new ModelType(entity, { resource, annots, reset }) as M;
   }
 
   asCollection<M extends ODataModel<T>, C extends ODataCollection<T, M>>(
     entities?: Partial<T>[] | { [name: string]: any }[],
-    {
-      annots,
-      reset,
-    }: { annots?: ODataEntitiesAnnotations; reset?: boolean } = {}
+    { annots }: { annots?: ODataEntitiesAnnotations<T> } = {}
   ): C {
+    const reset = annots !== undefined;
     let resource: ODataResource<T> = this as ODataResource<T>;
     const type = annots?.type || this.returnType();
     if (type === undefined) throw Error('');
-    const Collection = this.api.collectionForType(type);
+    const CollectionType = this.api.collectionForType(type);
     let path = annots?.entitySet;
     if (path !== undefined) {
       resource = this.api.entitySet<T>(path);
-      resource.query((q) => q.apply(this.queryOptions.toQueryArguments()));
+      resource.query((q) => q.restore(this.queryOptions.toQueryArguments()));
     }
-    return new Collection(entities, { resource, annots, reset }) as C;
+    return new CollectionType(entities, { resource, annots, reset }) as C;
   }
   //#endregion
+
+  isTypeOf(other: ODataResource<any>) {
+    return (
+      this.schema !== undefined &&
+      other.schema !== undefined &&
+      this.schema?.isTypeOf(other.schema.type())
+    );
+  }
 
   isSubtypeOf(other: ODataResource<any>) {
     return (
@@ -164,24 +163,49 @@ export class ODataResource<T> {
       : otherPath === selfPath && Types.isEqual(selfParams, otherParams);
   }
 
-  pathAndParams(escape: boolean = false): [string, { [name: string]: any }] {
-    const [spath, sparams] = this.pathSegments.pathAndParams(escape);
-    const [, qparams] = this.queryOptions.pathAndParams(escape);
+  pathAndParams(
+    { escape, ...options }: ParserOptions & { escape?: boolean } = {
+      escape: false,
+    }
+  ): [string, { [name: string]: any }] {
+    const parser =
+      this.schema !== undefined && 'parser' in this.schema
+        ? ((<any>this.schema).parser as Parser<T>)
+        : undefined;
+    const [spath, sparams] = this.pathSegments.pathAndParams({
+      escape,
+      parser,
+      options,
+    });
+    const [, qparams] = this.queryOptions.pathAndParams({
+      escape,
+      parser,
+      options,
+    });
 
     return [spath, { ...sparams, ...qparams }];
   }
 
-  endpointUrl(params: boolean = true) {
-    if (params) {
-      return `${this.api.serviceRootUrl}${this}`;
-    } else {
-      let [path] = this.pathAndParams();
-      return `${this.api.serviceRootUrl}${path}`;
+  endpointUrl({
+    escape = false,
+    params = true,
+    ...options
+  }: ParserOptions & { escape?: boolean; params?: boolean } = {}): string {
+    let [path, qparams] = this.pathAndParams({ escape, ...options });
+    if (params && !Types.isEmpty(qparams)) {
+      path = `${path}${QUERY_SEPARATOR}${Object.entries(qparams)
+        .map((e) => `${e[0]}${VALUE_SEPARATOR}${e[1]}`)
+        .join(PARAM_SEPARATOR)}`;
     }
+    return `${this.api.serviceRootUrl}${path}`;
   }
 
-  toString(): string {
-    let [path, params] = this.pathAndParams();
+  toString(
+    { escape, ...options }: ParserOptions & { escape?: boolean } = {
+      escape: false,
+    }
+  ): string {
+    let [path, params] = this.pathAndParams({ escape, ...options });
     let queryString = Object.entries(params)
       .map((e) => `${e[0]}${VALUE_SEPARATOR}${e[1]}`)
       .join(PARAM_SEPARATOR);
@@ -197,10 +221,10 @@ export class ODataResource<T> {
     });
   }
 
-  private __parser(
+  private __serializeParser(
     value: any,
     options?: ParserOptions,
-    type?: string
+    resourceType?: string
   ): Parser<T> | undefined {
     const dataType =
       options !== undefined && Types.isPlainObject(value)
@@ -212,59 +236,75 @@ export class ODataResource<T> {
     } else if (this.schema !== undefined && 'parser' in this.schema) {
       // Parser from resource schema
       return (<any>this.schema).parser as Parser<T> | undefined;
-    } else if (type !== undefined) {
+    } else if (resourceType !== undefined) {
       // Parser from resource type
+      return this.api.parserForType<T>(resourceType);
+    }
+    return undefined;
+  }
+
+  private __deserializeParser(
+    value: any,
+    options?: ParserOptions,
+    resourceType?: string
+  ): Parser<T> | undefined {
+    const type =
+      options !== undefined && Types.isPlainObject(value)
+        ? ODataHelper[options.version || DEFAULT_VERSION].type(value)
+        : resourceType;
+    if (type !== undefined) {
+      // Parser from type
       return this.api.parserForType<T>(type);
+    } else if (this.schema !== undefined && 'parser' in this.schema) {
+      // Parser from resource schema
+      return (<any>this.schema).parser as Parser<T> | undefined;
     }
     return undefined;
   }
 
   deserialize(value: any, options?: ParserOptions): any {
-    const parserOptions = options || this.api.options.parserOptions;
     const resourceType = this.returnType();
-    const _d = (value: any, options: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+    const _d = (value: any, options?: ParserOptions) => {
+      const parser = this.__deserializeParser(value, options, resourceType);
       return parser !== undefined && 'deserialize' in parser
         ? parser.deserialize(value, options)
         : value;
     };
     return Array.isArray(value)
-      ? value.map((v) => _d(v, parserOptions))
-      : _d(value, parserOptions);
+      ? value.map((v) => _d(v, options))
+      : _d(value, options);
   }
 
   serialize(value: any, options?: ParserOptions): any {
-    const parserOptions = options || this.api.options.parserOptions;
     const resourceType = this.type();
-    const _s = (value: any, options: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+    const _s = (value: any, options?: ParserOptions) => {
+      const parser = this.__serializeParser(value, options, resourceType);
       return parser !== undefined && 'serialize' in parser
         ? parser.serialize(value, options)
         : value;
     };
     return Array.isArray(value)
-      ? value.map((v) => _s(v, parserOptions))
-      : _s(value, parserOptions);
+      ? value.map((v) => _s(v, options))
+      : _s(value, options);
   }
 
   encode(value: any, options?: ParserOptions): any {
-    const parserOptions = options || this.api.options.parserOptions;
     const resourceType = this.type();
-    const _e = (value: any, options: ParserOptions) => {
-      const parser = this.__parser(value, options, resourceType);
+    const _e = (value: any, options?: ParserOptions) => {
+      const parser = this.__serializeParser(value, options, resourceType);
       return parser !== undefined && 'encode' in parser
         ? parser.encode(value, options)
         : value;
     };
     return Array.isArray(value)
-      ? value.map((v) => _e(v, parserOptions))
-      : _e(value, parserOptions);
+      ? value.map((v) => _e(v, options))
+      : _e(value, options);
   }
 
-  toJSON() {
+  toJson() {
     return {
-      segments: this.pathSegments.toJSON(),
-      options: this.queryOptions.toJSON(),
+      segments: this.pathSegments.toJson(),
+      options: this.queryOptions.toJson(),
     };
   }
 
@@ -275,6 +315,7 @@ export class ODataResource<T> {
   //#region Query Options
   clearQuery() {
     this.queryOptions.clear();
+    return this;
   }
 
   cloneQuery<P>() {
@@ -287,12 +328,17 @@ export class ODataResource<T> {
    * @param f Function context for handle the segments
    * @returns ODataActionResource
    */
-  segment(f: (q: ODataPathSegmentsHandler<T>, s?: ODataStructuredType<T>) => void) {
+  segment(
+    f: (q: ODataPathSegmentsHandler<T>, s?: ODataStructuredType<T>) => void
+  ) {
     /*
     const type = this.type();
     const schema = type ? this.api.findStructuredTypeForType<T>(type) : undefined;
     */
-    f(new ODataPathSegmentsHandler<T>(this.pathSegments), this.schema instanceof ODataStructuredType ? this.schema : undefined);
+    f(
+      new ODataPathSegmentsHandler<T>(this.pathSegments),
+      this.schema instanceof ODataStructuredType ? this.schema : undefined
+    );
     return this;
   }
 
@@ -301,12 +347,17 @@ export class ODataResource<T> {
    * Create an object handler for mutate the query options of the resource
    * @param f Function context for handle the query options
    */
-  query(f: (q: ODataQueryOptionsHandler<T>, s?: ODataStructuredType<T>) => void) {
+  query(
+    f: (q: ODataQueryOptionsHandler<T>, s?: ODataStructuredType<T>) => void
+  ) {
     /*
     const type = this.returnType();
     const schema = type ? this.api.findStructuredTypeForType<T>(type) : undefined;
     */
-    f(new ODataQueryOptionsHandler<T>(this.queryOptions), this.schema instanceof ODataStructuredType ? this.schema : undefined);
+    f(
+      new ODataQueryOptionsHandler<T>(this.queryOptions),
+      this.schema instanceof ODataStructuredType ? this.schema : undefined
+    );
     return this;
   }
 
@@ -332,68 +383,6 @@ export class ODataResource<T> {
   }
   //#endregion
 
-  // Base Requests
-  protected request(
-    method: string,
-    options: ODataOptions & {
-      body?: any;
-      etag?: string;
-      responseType?:
-        | 'arraybuffer'
-        | 'blob'
-        | 'json'
-        | 'text'
-        | 'value'
-        | 'property'
-        | 'entity'
-        | 'entities';
-      withCount?: boolean;
-      bodyQueryOptions?: QueryOptionNames[];
-    }
-  ): Observable<any> {
-    const apiOptions = this.api.options;
-    let params = options.params || {};
-    if (options.withCount) {
-      params = Http.mergeHttpParams(params, apiOptions.helper.countParam());
-    }
-
-    let etag = options.etag;
-    if (etag === undefined && Types.isPlainObject(options.body)) {
-      etag = apiOptions.helper.etag(options.body);
-    }
-
-    const request = new ODataRequest({
-      method,
-      etag,
-      body: options.body,
-      api: this.api,
-      resource: this,
-      observe: 'response',
-      headers: options.headers,
-      reportProgress: options.reportProgress,
-      params: params,
-      responseType: options.responseType,
-      fetchPolicy: options.fetchPolicy,
-      withCredentials: options.withCredentials,
-      bodyQueryOptions: options.bodyQueryOptions,
-    });
-
-    const res$ = this.api.request(request);
-    switch (options.responseType) {
-      case 'entities':
-        return res$.pipe(map((res: ODataResponse<T>) => res.entities()));
-      case 'entity':
-        return res$.pipe(map((res: ODataResponse<T>) => res.entity()));
-      case 'property':
-        return res$.pipe(map((res: ODataResponse<T>) => res.property()));
-      case 'value':
-        return res$.pipe(map((res: ODataResponse<T>) => res.value() as T));
-      default:
-        // Other responseTypes (arraybuffer, blob, json, text) return body
-        return res$.pipe(map((res: ODataResponse<T>) => res.body));
-    }
-  }
-
   protected get(
     options: ODataOptions & {
       etag?: string;
@@ -407,10 +396,10 @@ export class ODataResource<T> {
         | 'entity'
         | 'entities';
       withCount?: boolean;
-      bodyQueryOptions?: QueryOptionNames[];
+      bodyQueryOptions?: QueryOption[];
     } = {}
   ): Observable<any> {
-    return this.request('GET', options);
+    return this.api.request<T>('GET', this, options);
   }
 
   protected post(
@@ -428,7 +417,7 @@ export class ODataResource<T> {
       withCount?: boolean;
     } = {}
   ): Observable<any> {
-    return this.request('POST', { body, ...options });
+    return this.api.request<T>('POST', this, { body, ...options });
   }
 
   protected put(
@@ -447,7 +436,7 @@ export class ODataResource<T> {
       withCount?: boolean;
     } = {}
   ): Observable<any> {
-    return this.request('PUT', { body, ...options });
+    return this.api.request<T>('PUT', this, { body, ...options });
   }
 
   protected patch(
@@ -466,7 +455,7 @@ export class ODataResource<T> {
       withCount?: boolean;
     } = {}
   ): Observable<any> {
-    return this.request('PATCH', { body, ...options });
+    return this.api.request<T>('PATCH', this, { body, ...options });
   }
 
   protected delete(
@@ -484,6 +473,6 @@ export class ODataResource<T> {
       withCount?: boolean;
     } = {}
   ): Observable<any> {
-    return this.request('DELETE', options);
+    return this.api.request<T>('DELETE', this, options);
   }
 }

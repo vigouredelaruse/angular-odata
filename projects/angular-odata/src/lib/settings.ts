@@ -9,11 +9,11 @@ import {
   ODataStructuredType,
 } from './schema';
 import { ODataEntityService } from './services/entity';
-import { ApiConfig, Parser } from './types';
+import { ApiConfig, EdmType, Parser } from './types';
 
 export class ODataSettings {
   apis: ODataApi[];
-  constructor(...configs: ApiConfig[]) {
+  constructor(configs: ApiConfig[]) {
     this.apis = configs.map((config) => new ODataApi(config));
     if (this.apis.length > 1) {
       if (this.apis.some((c) => c.name === undefined))
@@ -44,7 +44,7 @@ export class ODataSettings {
   }
   public findApiForTypes(types: string[]) {
     return this.apis.find((c) =>
-      c.schemas.some((s) => types.some((type) => s.isNamespaceOf(type)))
+      c.schemas.some((s) => types.some((type) => s.isNamespaceOf(type))),
     );
   }
   public findApiForType(type: string) {
@@ -100,7 +100,7 @@ export class ODataSettings {
     return values[0] as ODataEntitySet;
   }
 
-  public parserForType<T>(type: string) {
+  public parserForType<T>(type: string | EdmType) {
     let values = this.apis
       .map((api) => api.parserForType<T>(type))
       .filter((e) => e);

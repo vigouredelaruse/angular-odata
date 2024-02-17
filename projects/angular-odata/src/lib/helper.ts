@@ -32,20 +32,23 @@ export interface ODataVersionHelper {
   ODATA_ETAG: string;
   ODATA_CONTEXT: string;
   ODATA_MEDIA_ETAG: string;
+  ODATA_NEXTLINK: string;
+  ODATA_DEFERRED: string;
+  ODATA_ANNOTATION: string;
 
-  entity(value: { [key: string]: any }): any;
-  entities(value: { [key: string]: any }): any;
-  property(value: { [key: string]: any }): any;
-  annotations(value: { [key: string]: any }): Map<string, any>;
-  attributes(value: { [key: string]: any }, metadata: ODataMetadataType): any;
+  entity(value: { [name: string]: any }): any;
+  entities(value: { [name: string]: any }): any;
+  property(value: { [name: string]: any }): any;
+  annotations(value: { [name: string]: any }): Map<string, any>;
+  attributes(value: { [name: string]: any }, metadata: ODataMetadataType): any;
 
-  context(annots: Map<string, any> | { [key: string]: any }): ODataContext;
-  id(annots: Map<string, any> | { [key: string]: any }): string | undefined;
-  etag(annots: Map<string, any> | { [key: string]: any }): string | undefined;
-  type(annots: Map<string, any> | { [key: string]: any }): string | undefined;
+  context(annots: Map<string, any> | { [name: string]: any }): ODataContext;
+  id(annots: Map<string, any> | { [name: string]: any }): string | undefined;
+  etag(annots: Map<string, any> | { [name: string]: any }): string | undefined;
+  type(annots: Map<string, any> | { [name: string]: any }): string | undefined;
   count(annots: Map<string, any>): number | undefined;
   functions(annots: Map<string, any>): Map<string, any>;
-  properties(annots: Map<string, any>): Map<string, Map<string, any>>;
+  properties<T>(annots: Map<string, any>): Map<keyof T, Map<string, any>>;
   mediaEtag(annots: Map<string, any>): string | undefined;
   metadataEtag(annots: Map<string, any>): string | undefined;
   nextLink(annots: Map<string, any>): string | undefined;
@@ -55,17 +58,17 @@ export interface ODataVersionHelper {
   mediaEditLink(annots: Map<string, any>): string | undefined;
   mediaContentType(annots: Map<string, any>): string | undefined;
   deltaLink(annots: Map<string, any>): string | undefined;
-  countParam(): { [key: string]: string };
+  countParam(): { [name: string]: string };
 }
 
 const ODataVersionBaseHelper = <any>{
-  entity(data: { [key: string]: any }) {
+  entity(data: { [name: string]: any }) {
     return data;
   },
-  entities(data: { [key: string]: any }) {
+  entities(data: { [name: string]: any }) {
     return data[this.VALUE];
   },
-  property(data: { [key: string]: any }) {
+  property(data: { [name: string]: any }) {
     return this.VALUE in data ? data[this.VALUE] : data;
   },
   functions(annots: Map<string, any>) {
@@ -75,8 +78,8 @@ const ODataVersionBaseHelper = <any>{
       .forEach((key) =>
         funcs.set(
           key.substring(this.ODATA_FUNCTION_PREFIX.length),
-          annots.get(key)
-        )
+          annots.get(key),
+        ),
       );
     return funcs;
   },
@@ -89,23 +92,23 @@ const ODataVersionBaseHelper = <any>{
         let prop = props.has(name) ? props.get(name)! : new Map<string, any>();
         prop.set(
           key.substring(key.indexOf(this.ODATA_ANNOTATION_PREFIX)),
-          annots.get(key)
+          annots.get(key),
         );
         props.set(name, prop);
       });
     return props;
   },
-  id(annots: Map<string, any> | { [key: string]: any }) {
+  id(annots: Map<string, any> | { [name: string]: any }) {
     return annots instanceof Map
       ? annots.get(this.ODATA_ID)
       : annots[this.ODATA_ID];
   },
-  etag(annots: Map<string, any> | { [key: string]: any }) {
+  etag(annots: Map<string, any> | { [name: string]: any }) {
     return annots instanceof Map
       ? annots.get(this.ODATA_ETAG)
       : annots[this.ODATA_ETAG];
   },
-  type(annots: Map<string, any> | { [key: string]: any }) {
+  type(annots: Map<string, any> | { [name: string]: any }) {
     let type =
       annots instanceof Map
         ? annots.get(this.ODATA_TYPE)
@@ -132,18 +135,18 @@ const ODataVersionBaseHelper = <any>{
       ? Number(annots.get(this.ODATA_COUNT))
       : undefined;
   },
-  annotations(value: { [key: string]: any }) {
+  annotations(value: { [name: string]: any }) {
     const annots = new Map<string, any>();
     Object.entries(value)
       .filter(
         ([key]) =>
           key.indexOf(this.ODATA_ANNOTATION_PREFIX) !== -1 ||
-          key.startsWith(this.ODATA_FUNCTION_PREFIX)
+          key.startsWith(this.ODATA_FUNCTION_PREFIX),
       )
       .forEach(([key, value]) => annots.set(key, value));
     return annots;
   },
-  attributes(value: { [key: string]: any }, metadata: ODataMetadataType) {
+  attributes(value: { [name: string]: any }, metadata: ODataMetadataType) {
     return Object.entries(value)
       .filter(
         ([k]) =>
@@ -154,7 +157,7 @@ const ODataVersionBaseHelper = <any>{
             !k.startsWith(this.ODATA_FUNCTION_PREFIX)) ||
           (metadata === 'full' &&
             k.indexOf(this.ODATA_ANNOTATION_PREFIX) === -1 &&
-            !k.startsWith(this.ODATA_FUNCTION_PREFIX))
+            !k.startsWith(this.ODATA_FUNCTION_PREFIX)),
       )
       .reduce((acc, e) => ({ ...acc, [e[0]]: e[1] }), {});
   },
@@ -197,7 +200,8 @@ const ODataVersionBaseHelper = <any>{
 
 export const ODataHelper = {
   //#region Version 4.0
-  [VERSION_4_0]: <ODataVersionHelper>Object.assign({}, ODataVersionBaseHelper, {
+  [VERSION_4_0]: <ODataVersionHelper>{
+    ...ODataVersionBaseHelper,
     VALUE: 'value',
     ODATA_ANNOTATION_PREFIX: '@odata',
     ODATA_FUNCTION_PREFIX: '#',
@@ -210,7 +214,7 @@ export const ODataHelper = {
     //odata.etag: the ETag of the entity
     ODATA_ETAG: '@odata.etag',
     ODATA_METADATA_ETAG: '@odata.metadataEtag',
-    //odata.type: the type of the containing {[key: string]: any} or targeted property if the type of the {[key: string]: any} or targeted property cannot be heuristically determined
+    //odata.type: the type of the containing {[name: string]: any} or targeted property if the type of the {[name: string]: any} or targeted property cannot be heuristically determined
     ODATA_TYPE: '@odata.type',
     //odata.nextLink: the next link of a collection with partial results
     ODATA_NEXTLINK: '@odata.nextLink',
@@ -241,7 +245,7 @@ export const ODataHelper = {
     //http://nb-mdp-dev01:57970/$metadata#categorias(children(children(children(children(children(children(children(children(children(children()))))))))))/$entity
     //http://nb-mdp-dev01:57970/$metadata#recursos/SIU.Documentos.Documento/$entity
     //http://nb-mdp-dev01:57970/$metadata#SIU.Api.Infrastructure.Storage.Backend.SiuUrls
-    context(annots: Map<string, any> | { [key: string]: any }) {
+    context(annots: Map<string, any> | { [name: string]: any }) {
       let ctx: ODataContext = {};
       const str =
         annots instanceof Map
@@ -279,10 +283,11 @@ export const ODataHelper = {
     countParam() {
       return { [$COUNT]: 'true' };
     },
-  }),
+  },
   //#endregion
   //#region Version 3.0
-  [VERSION_3_0]: <ODataVersionHelper>Object.assign({}, ODataVersionBaseHelper, {
+  [VERSION_3_0]: <ODataVersionHelper>{
+    ...ODataVersionBaseHelper,
     ODATA_ANNOTATION_PREFIX: 'odata.',
     ODATA_FUNCTION_PREFIX: '',
     ODATA_ID: 'odata.id',
@@ -292,7 +297,7 @@ export const ODataHelper = {
     ODATA_TYPE: 'odata.type',
     ODATA_COUNT: 'odata.count',
     VALUE: 'value',
-    context(annots: Map<string, any> | { [key: string]: any }) {
+    context(annots: Map<string, any> | { [name: string]: any }) {
       let ctx: ODataContext = {};
       const str =
         annots instanceof Map
@@ -311,10 +316,11 @@ export const ODataHelper = {
     countParam() {
       return { [$INLINECOUNT]: 'allpages' };
     },
-  }),
+  },
   //#endregion
   //#region Version 2.0
-  [VERSION_2_0]: <ODataVersionHelper>Object.assign({}, ODataVersionBaseHelper, {
+  [VERSION_2_0]: <ODataVersionHelper>{
+    ...ODataVersionBaseHelper,
     ODATA_ID: 'id',
     ODATA_ETAG: 'etag',
     ODATA_ANNOTATION: '__metadata',
@@ -323,21 +329,25 @@ export const ODataHelper = {
     ODATA_DEFERRED: '__deferred',
     ODATA_TYPE: 'type',
     VALUE: 'results',
-    annotations(value: { [key: string]: any }) {
+    annotations(value: { [name: string]: any }) {
       const annots = new Map<string, any>();
       if (this.ODATA_ANNOTATION in value) {
         Object.entries(value[this.ODATA_ANNOTATION]).forEach(([key, value]) =>
-          annots.set(key, value)
+          annots.set(key, value),
         );
       }
       return annots;
     },
-    attributes(value: { [key: string]: any }, metadata: ODataMetadataType) {
+    context(annots: Map<string, any> | { [name: string]: any }) {
+      let ctx: ODataContext = {};
+      return ctx;
+    },
+    attributes(value: { [name: string]: any }, metadata: ODataMetadataType) {
       return value;
     },
     countParam() {
       return { [$INLINECOUNT]: 'allpages' };
     },
-  }),
+  },
   //#endregion
 };

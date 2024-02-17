@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -43,21 +101,27 @@
 
 
 <ol class="breadcrumb">
-  <li>Classes</li>
-  <li >ODataQueryOptionHandler</li>
+  <li class="breadcrumb-item">Classes</li>
+  <li class="breadcrumb-item" >ODataQueryOptionHandler</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -70,7 +134,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -128,7 +192,7 @@
                                 <a href="#some" >some</a>
                             </li>
                             <li>
-                                <a href="#toJSON" >toJSON</a>
+                                <a href="#toJson" >toJson</a>
                             </li>
                             <li>
                                 <a href="#unset" >unset</a>
@@ -162,18 +226,18 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-constructor">
     <h3 id="constructor">Constructor</h3>
         <table class="table table-sm table-bordered">
             <tbody>
                 <tr>
                     <td class="col-md-4">
-<code>constructor(o: <a href="../undefineds/QueryOptionNames.html" target="_self">Map&lt;QueryOptionNames | any&gt;</a>, n: <a href="../undefineds/QueryOptionNames.html" target="_self">QueryOptionNames</a>)</code>
+<code>constructor(o: <a href="../undefineds/QueryOption.html" target="_self">Map&lt;QueryOption | any&gt;</a>, n: <a href="../undefineds/QueryOption.html" target="_self">QueryOption</a>)</code>
                     </td>
                 </tr>
                         <tr>
                             <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:29</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:32</a></div>
                             </td>
                         </tr>
 
@@ -194,7 +258,7 @@
                                                         <td>o</td>
                                                   
                                                         <td>
-                                                                        <code><a href="../miscellaneous/enumerations.html#QueryOptionNames" target="_self" >Map&lt;QueryOptionNames | any&gt;</a></code>
+                                                                        <code><a href="../miscellaneous/enumerations.html#QueryOption" target="_self" >Map&lt;QueryOption | any&gt;</a></code>
                                                         </td>
                                                   
                                                     <td>
@@ -206,7 +270,7 @@
                                                         <td>n</td>
                                                   
                                                         <td>
-                                                                        <code><a href="../miscellaneous/enumerations.html#QueryOptionNames" target="_self" >QueryOptionNames</a></code>
+                                                                        <code><a href="../miscellaneous/enumerations.html#QueryOption" target="_self" >QueryOption</a></code>
                                                         </td>
                                                   
                                                     <td>
@@ -224,7 +288,7 @@
 </section>
 
 
-            <section>
+            <section data-compodoc="block-methods">
     
     <h3 id="methods">
         Methods
@@ -235,7 +299,7 @@
                 <td class="col-md-4">
                     <a name="assertArray"></a>
                     <span class="name">
-                        <span class="modifier">Private</span>
+                            <span class="modifier">Private</span>
                         <span ><b>assertArray</b></span>
                         <a href="#assertArray"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -243,27 +307,27 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>assertArray()</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="71"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:71</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="74"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:74</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>any[]</code>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>any[]</code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -274,7 +338,7 @@
                 <td class="col-md-4">
                     <a name="assertObject"></a>
                     <span class="name">
-                        <span class="modifier">Private</span>
+                            <span class="modifier">Private</span>
                         <span ><b>assertObject</b></span>
                         <a href="#assertObject"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -282,59 +346,57 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>assertObject(create: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank">boolean</a>)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="125"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:125</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="128"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:128</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>create</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>create</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>literal type</code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>literal type</code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -357,60 +419,58 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="195"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:195</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="198"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:198</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Merge values from object into the managed odata query option.</p>
+                        <div class="io-description"><p>Merge values from object into the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>values</td>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>values</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Object to merge</p>
+                                            <td>
+                                                    <p>Object to merge</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -433,61 +493,59 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="107"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:107</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="110"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:110</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Return value at index of the managed odata query option.</p>
+                        <div class="io-description"><p>Return value at index of the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>index</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>index</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Index of the value</p>
+                                            <td>
+                                                    <p>Index of the value</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        <p>The value</p>
+                        </div>
+                            <div class="io-description">
+                                <p>The value</p>
 
-                    </div>
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -510,23 +568,23 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="204"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:204</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="207"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:207</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Clear the managed odata query option.</p>
+                        <div class="io-description"><p>Clear the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -549,29 +607,27 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="54"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:54</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="57"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:57</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Returns a boolean indicating if the managed odata query option is empty.</p>
+                        <div class="io-description"><p>Returns a boolean indicating if the managed odata query option is empty.</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        <p>True if the managed odata query option is empty.</p>
+                        </div>
+                            <div class="io-description">
+                                <p>True if the managed odata query option is empty.</p>
 
-                    </div>
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -594,53 +650,51 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="115"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:115</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="118"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:118</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>predicate</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>predicate</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -663,53 +717,51 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="119"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:119</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="122"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:122</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>predicate</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>predicate</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -732,76 +784,74 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="157"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:157</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="160"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:160</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Get the value for path from the managed odata query option.</p>
+                        <div class="io-description"><p>Get the value for path from the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>path</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>path</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
-
-
-                                    <td>
-                                        <p>The path from get the value</p>
-
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>def</td>
-                                    <td>
-                                                <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                    </td>
-
-                                    <td>
-                                        Yes
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Default if not found</p>
+                                            <td>
+                                                    <p>The path from get the value</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                                <td>def</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                                            <td>
+                                                    Yes
+                                            </td>
+
+
+                                            <td>
+                                                    <p>Default if not found</p>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -824,61 +874,59 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="185"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:185</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="188"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:188</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Test if the managed odata query option has the value.</p>
+                        <div class="io-description"><p>Test if the managed odata query option has the value.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>path</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>path</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>The path fot test if the value is set</p>
+                                            <td>
+                                                    <p>The path fot test if the value is set</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        <p>Boolean indicating if the value is set</p>
+                        </div>
+                            <div class="io-description">
+                                <p>Boolean indicating if the value is set</p>
 
-                    </div>
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -901,60 +949,58 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="81"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:81</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="84"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:84</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Push value to the managed odata query option.</p>
+                        <div class="io-description"><p>Push value to the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>value</td>
-                                    <td>
-                                                <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Value to push</p>
+                                            <td>
+                                                    <p>Value to push</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -977,60 +1023,58 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="89"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:89</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="92"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:92</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Remove value from the managed odata query option.</p>
+                        <div class="io-description"><p>Remove value from the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>value</td>
-                                    <td>
-                                                <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Value to remove</p>
+                                            <td>
+                                                    <p>Value to remove</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1053,76 +1097,74 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="146"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:146</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="149"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:149</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Set the value for path in the managed odata query option.</p>
+                        <div class="io-description"><p>Set the value for path in the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>path</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>path</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
-
-
-                                    <td>
-                                        <p>Path for set the value</p>
-
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>value</td>
-                                    <td>
-                                                <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                    <td>
-                                        <p>Value to set</p>
+                                            <td>
+                                                    <p>Path for set the value</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                            <td>
+                                                    <p>Value to set</p>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1145,53 +1187,51 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="111"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:111</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="114"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:114</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>predicate</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>predicate</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1200,42 +1240,40 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="toJSON"></a>
+                    <a name="toJson"></a>
                     <span class="name">
-                        <span ><b>toJSON</b></span>
-                        <a href="#toJSON"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>toJson</b></span>
+                        <a href="#toJson"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>toJSON()</code>
+<code>toJson()</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="46"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:46</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="49"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:49</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Converts the managed odata query option to a json object.</p>
+                        <div class="io-description"><p>Converts the managed odata query option to a json object.</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1258,55 +1296,53 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="166"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:166</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="169"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:169</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Unset the value for path in the managed odata query option.</p>
+                        <div class="io-description"><p>Unset the value for path in the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>path</td>
-                                    <td>
-                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>path</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1329,60 +1365,58 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="64"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:64</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="67"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:67</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Get or Set the value of the managed odata query option.</p>
+                        <div class="io-description"><p>Get or Set the value of the managed odata query option.</p>
 </div>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                    <td>Description</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>v</td>
-                                    <td>
-                                                <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
-                                    </td>
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Description</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>v</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
 
-                                    <td>
-                                        Yes
-                                    </td>
+                                            <td>
+                                                    Yes
+                                            </td>
 
 
-                                    <td>
-                                        <p>The value to set.</p>
+                                            <td>
+                                                    <p>The value to set.</p>
 
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -1393,7 +1427,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-accessors">
     <h3 id="accessors">
         Accessors
     </h3>
@@ -1413,7 +1447,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="38" class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:38</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">projects/angular-odata/src/lib/resources/query/handlers.ts:41</a></div>
                                 </td>
                             </tr>
                     <tr>
@@ -1430,8 +1464,9 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { QueryOptionNames } from &#x27;../../types&#x27;;
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { ODataStructuredType } from &#x27;../../schema&#x27;;
+import { QueryOption } from &#x27;../../types&#x27;;
 import { Objects, Types } from &#x27;../../utils&#x27;;
 import {
   alias,
@@ -1447,22 +1482,24 @@ import {
 } from &#x27;./builder&#x27;;
 import {
   ComputeExpression,
-  FilterConnector,
+  ComputeExpressionBuilder,
   FilterExpression,
+  FilterExpressionBuilder,
   OrderByExpression,
-  SearchConnector,
+  OrderByExpressionBuilder,
   SearchExpression,
-  ODataFunctions,
-  ODataOperators,
+  SearchExpressionBuilder,
+  ExpandExpression,
+  ExpandExpressionBuilder,
+  SelectExpression,
+  SelectExpressionBuilder,
 } from &#x27;./expressions&#x27;;
-import { ExpandExpression } from &#x27;./expressions/expand&#x27;;
-import { SelectExpression } from &#x27;./expressions/select&#x27;;
 import type { ODataQueryArguments, ODataQueryOptions } from &#x27;./options&#x27;;
 
 export class ODataQueryOptionHandler&lt;T&gt; {
   constructor(
-    private o: Map&lt;QueryOptionNames, any&gt;,
-    private n: QueryOptionNames
+    private o: Map&lt;QueryOption, any&gt;,
+    private n: QueryOption,
   ) {}
 
   /**
@@ -1476,7 +1513,7 @@ export class ODataQueryOptionHandler&lt;T&gt; {
    * Converts the managed odata query option to a json object.
    * @returns {any}
    */
-  toJSON() {
+  toJson() {
     return this.o.get(this.n);
   }
 
@@ -1522,7 +1559,7 @@ export class ODataQueryOptionHandler&lt;T&gt; {
   remove(value: any) {
     this.o.set(
       this.n,
-      this.assertArray().filter((v) &#x3D;&gt; v !&#x3D;&#x3D; value)
+      this.assertArray().filter((v) &#x3D;&gt; v !&#x3D;&#x3D; value),
     );
     // If only one and not is array... down to value
     if (
@@ -1603,7 +1640,7 @@ export class ODataQueryOptionHandler&lt;T&gt; {
     if (Types.isArray(this.o.get(this.n))) {
       this.o.set(
         this.n,
-        this.o.get(this.n).filter((v: any) &#x3D;&gt; !Types.isEmpty(v))
+        this.o.get(this.n).filter((v: any) &#x3D;&gt; !Types.isEmpty(v)),
       );
       if (this.o.get(this.n).length &#x3D;&#x3D;&#x3D; 1)
         this.o.set(this.n, this.o.get(this.n)[0]);
@@ -1696,23 +1733,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   select(
     opts: (
-      builder: { s: T; e: () &#x3D;&gt; SelectExpression&lt;T&gt; },
-      current?: SelectExpression&lt;T&gt;
-    ) &#x3D;&gt; SelectExpression&lt;T&gt;
+      builder: SelectExpressionBuilder&lt;T&gt;,
+      current?: SelectExpression&lt;T&gt;,
+    ) &#x3D;&gt; SelectExpression&lt;T&gt;,
   ): SelectExpression&lt;T&gt;;
   select(opts: Select&lt;T&gt;): ODataQueryOptionHandler&lt;T&gt;;
   select(): ODataQueryOptionHandler&lt;T&gt;;
   select(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.expression(
-        QueryOptionNames.select,
+        QueryOption.select,
         SelectExpression.select(
           opts,
-          this.options.expression(QueryOptionNames.select)
-        )
+          this.options.expression(QueryOption.select),
+        ),
       );
     }
-    return this.options.option&lt;Select&lt;T&gt;&gt;(QueryOptionNames.select, opts);
+    return this.options.option&lt;Select&lt;T&gt;&gt;(QueryOption.select, opts);
   }
 
   /**
@@ -1722,23 +1759,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   expand(
     opts: (
-      builder: { s: T; e: () &#x3D;&gt; ExpandExpression&lt;T&gt; },
-      current?: ExpandExpression&lt;T&gt;
-    ) &#x3D;&gt; ExpandExpression&lt;T&gt;
+      builder: ExpandExpressionBuilder&lt;T&gt;,
+      current?: ExpandExpression&lt;T&gt;,
+    ) &#x3D;&gt; ExpandExpression&lt;T&gt;,
   ): ExpandExpression&lt;T&gt;;
   expand(opts: Expand&lt;T&gt;): ODataQueryOptionHandler&lt;T&gt;;
   expand(): ODataQueryOptionHandler&lt;T&gt;;
   expand(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.expression(
-        QueryOptionNames.expand,
+        QueryOption.expand,
         ExpandExpression.expand(
           opts,
-          this.options.expression(QueryOptionNames.expand)
-        )
+          this.options.expression(QueryOption.expand),
+        ),
       );
     }
-    return this.options.option&lt;Expand&lt;T&gt;&gt;(QueryOptionNames.expand, opts);
+    return this.options.option&lt;Expand&lt;T&gt;&gt;(QueryOption.expand, opts);
   }
 
   /**
@@ -1749,28 +1786,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   compute(
     opts: (
-      builder: {
-        s: T;
-        e: () &#x3D;&gt; ComputeExpression&lt;T&gt;;
-        o: ODataOperators&lt;T&gt;;
-        f: ODataFunctions&lt;T&gt;;
-      },
-      current?: ComputeExpression&lt;T&gt;
-    ) &#x3D;&gt; ComputeExpression&lt;T&gt;
+      builder: ComputeExpressionBuilder&lt;T&gt;,
+      current?: ComputeExpression&lt;T&gt;,
+    ) &#x3D;&gt; ComputeExpression&lt;T&gt;,
   ): ComputeExpression&lt;T&gt;;
   compute(opts: string): ODataQueryOptionHandler&lt;T&gt;;
   compute(): ODataQueryOptionHandler&lt;T&gt;;
   compute(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.expression(
-        QueryOptionNames.compute,
+        QueryOption.compute,
         ComputeExpression.compute(
           opts,
-          this.options.expression(QueryOptionNames.compute)
-        )
+          this.options.expression(QueryOption.compute),
+        ),
       );
     }
-    return this.options.option&lt;string&gt;(QueryOptionNames.compute, opts);
+    return this.options.option&lt;string&gt;(QueryOption.compute, opts);
   }
 
   /**
@@ -1782,7 +1814,7 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
   format(opts: string): ODataQueryOptionHandler&lt;T&gt;;
   format(): ODataQueryOptionHandler&lt;T&gt;;
   format(opts?: string): any {
-    return this.options.option&lt;string&gt;(QueryOptionNames.format, opts);
+    return this.options.option&lt;string&gt;(QueryOption.format, opts);
   }
 
   /**
@@ -1793,7 +1825,7 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
   transform(opts: Transform&lt;T&gt;): ODataQueryOptionHandler&lt;T&gt;;
   transform(): ODataQueryOptionHandler&lt;T&gt;;
   transform(opts?: Transform&lt;T&gt;): any {
-    return this.options.option&lt;Transform&lt;T&gt;&gt;(QueryOptionNames.transform, opts);
+    return this.options.option&lt;Transform&lt;T&gt;&gt;(QueryOption.transform, opts);
   }
 
   /**
@@ -1803,25 +1835,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   search(
     opts: (
-      builder: {
-        e: (connector: SearchConnector) &#x3D;&gt; SearchExpression&lt;T&gt;;
-      },
-      current?: SearchExpression&lt;T&gt;
-    ) &#x3D;&gt; SearchExpression&lt;T&gt;
+      builder: SearchExpressionBuilder&lt;T&gt;,
+      current?: SearchExpression&lt;T&gt;,
+    ) &#x3D;&gt; SearchExpression&lt;T&gt;,
   ): SearchExpression&lt;T&gt;;
   search(opts: string): ODataQueryOptionHandler&lt;T&gt;;
   search(): ODataQueryOptionHandler&lt;T&gt;;
   search(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.expression(
-        QueryOptionNames.search,
+        QueryOption.search,
         SearchExpression.search(
           opts,
-          this.options.expression(QueryOptionNames.search)
-        )
+          this.options.expression(QueryOption.search),
+        ),
       );
     }
-    return this.options.option&lt;string&gt;(QueryOptionNames.search, opts);
+    return this.options.option&lt;string&gt;(QueryOption.search, opts);
   }
 
   /**
@@ -1831,28 +1861,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   filter(
     opts: (
-      builder: {
-        s: T;
-        e: (connector?: FilterConnector) &#x3D;&gt; FilterExpression&lt;T&gt;;
-        o: ODataOperators&lt;T&gt;;
-        f: ODataFunctions&lt;T&gt;;
-      },
-      current?: FilterExpression&lt;T&gt;
-    ) &#x3D;&gt; FilterExpression&lt;T&gt;
+      builder: FilterExpressionBuilder&lt;T&gt;,
+      current?: FilterExpression&lt;T&gt;,
+    ) &#x3D;&gt; FilterExpression&lt;T&gt;,
   ): FilterExpression&lt;T&gt;;
   filter(opts: Filter&lt;T&gt;): ODataQueryOptionHandler&lt;T&gt;;
   filter(): ODataQueryOptionHandler&lt;T&gt;;
   filter(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.expression(
-        QueryOptionNames.filter,
+        QueryOption.filter,
         FilterExpression.filter(
           opts,
-          this.options.expression(QueryOptionNames.filter)
-        )
+          this.options.expression(QueryOption.filter),
+        ),
       );
     }
-    return this.options.option&lt;Filter&lt;T&gt;&gt;(QueryOptionNames.filter, opts);
+    return this.options.option&lt;Filter&lt;T&gt;&gt;(QueryOption.filter, opts);
   }
 
   /**
@@ -1862,23 +1887,23 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    */
   orderBy(
     opts: (
-      builder: { s: T; e: () &#x3D;&gt; OrderByExpression&lt;T&gt; },
-      current?: OrderByExpression&lt;T&gt;
-    ) &#x3D;&gt; OrderByExpression&lt;T&gt;
+      builder: OrderByExpressionBuilder&lt;T&gt;,
+      current?: OrderByExpression&lt;T&gt;,
+    ) &#x3D;&gt; OrderByExpression&lt;T&gt;,
   ): OrderByExpression&lt;T&gt;;
   orderBy(opts: OrderBy&lt;T&gt;): ODataQueryOptionHandler&lt;T&gt;;
   orderBy(): ODataQueryOptionHandler&lt;T&gt;;
   orderBy(opts?: any): any {
     if (Types.isFunction(opts)) {
       return this.options.option(
-        QueryOptionNames.orderBy,
+        QueryOption.orderBy,
         OrderByExpression.orderBy(
           opts,
-          this.options.expression(QueryOptionNames.orderBy)
-        )
+          this.options.expression(QueryOption.orderBy),
+        ),
       );
     }
-    return this.options.option&lt;OrderBy&lt;T&gt;&gt;(QueryOptionNames.orderBy, opts);
+    return this.options.option&lt;OrderBy&lt;T&gt;&gt;(QueryOption.orderBy, opts);
   }
 
   /**
@@ -1889,7 +1914,7 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
   top(opts: number): ODataQueryOptionHandler&lt;T&gt;;
   top(): ODataQueryOptionHandler&lt;T&gt;;
   top(opts?: number): any {
-    return this.options.option&lt;number&gt;(QueryOptionNames.top, opts);
+    return this.options.option&lt;number&gt;(QueryOption.top, opts);
   }
 
   /**
@@ -1900,7 +1925,7 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
   skip(opts: number): ODataQueryOptionHandler&lt;T&gt;;
   skip(): ODataQueryOptionHandler&lt;T&gt;;
   skip(opts?: number): any {
-    return this.options.option&lt;number&gt;(QueryOptionNames.skip, opts);
+    return this.options.option&lt;number&gt;(QueryOption.skip, opts);
   }
 
   /**
@@ -1911,7 +1936,7 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
   skiptoken(opts: string): ODataQueryOptionHandler&lt;T&gt;;
   skiptoken(): ODataQueryOptionHandler&lt;T&gt;;
   skiptoken(opts?: string): any {
-    return this.options.option&lt;string&gt;(QueryOptionNames.skiptoken, opts);
+    return this.options.option&lt;string&gt;(QueryOption.skiptoken, opts);
   }
 
   /**
@@ -1931,21 +1956,21 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
       if (skiptoken !&#x3D;&#x3D; null) {
         this.skiptoken(skiptoken);
       } else {
-        this.options.remove(QueryOptionNames.skiptoken);
+        this.options.remove(QueryOption.skiptoken);
       }
     }
     if (skip !&#x3D;&#x3D; undefined) {
       if (skip !&#x3D;&#x3D; null) {
         this.skip(skip);
       } else {
-        this.options.remove(QueryOptionNames.skip);
+        this.options.remove(QueryOption.skip);
       }
     }
     if (top !&#x3D;&#x3D; undefined) {
       if (top !&#x3D;&#x3D; null) {
         this.top(top);
       } else {
-        this.options.remove(QueryOptionNames.top);
+        this.options.remove(QueryOption.top);
       }
     }
   }
@@ -1954,9 +1979,9 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
    * Shortcut for clear pagination by unset $top, $skip, $skiptoken.
    */
   clearPaging() {
-    this.options.remove(QueryOptionNames.skip);
-    this.options.remove(QueryOptionNames.top);
-    this.options.remove(QueryOptionNames.skiptoken);
+    this.options.remove(QueryOption.skip);
+    this.options.remove(QueryOption.top);
+    this.options.remove(QueryOption.skiptoken);
   }
 
   /**
@@ -1981,80 +2006,80 @@ export class ODataQueryOptionsHandler&lt;T&gt; {
     if (query.select !&#x3D;&#x3D; undefined) {
       if (query.select instanceof SelectExpression) {
         this.options.expression(
-          QueryOptionNames.select,
-          query.select as SelectExpression&lt;T&gt;
+          QueryOption.select,
+          query.select as SelectExpression&lt;T&gt;,
         );
       } else if (query.select !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.select, query.select);
+        this.options.option(QueryOption.select, query.select);
       } else {
-        this.options.remove(QueryOptionNames.select);
+        this.options.remove(QueryOption.select);
       }
     }
     if (query.expand !&#x3D;&#x3D; undefined) {
       if (query.expand instanceof ExpandExpression) {
         this.options.expression(
-          QueryOptionNames.expand,
-          query.expand as ExpandExpression&lt;T&gt;
+          QueryOption.expand,
+          query.expand as ExpandExpression&lt;T&gt;,
         );
       } else if (query.expand !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.expand, query.expand);
+        this.options.option(QueryOption.expand, query.expand);
       } else {
-        this.options.remove(QueryOptionNames.expand);
+        this.options.remove(QueryOption.expand);
       }
     }
     if (query.compute !&#x3D;&#x3D; undefined) {
       if (query.compute instanceof ComputeExpression) {
         this.options.expression(
-          QueryOptionNames.compute,
-          query.compute as ComputeExpression&lt;T&gt;
+          QueryOption.compute,
+          query.compute as ComputeExpression&lt;T&gt;,
         );
       } else if (query.compute !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.compute, query.compute);
+        this.options.option(QueryOption.compute, query.compute);
       } else {
-        this.options.remove(QueryOptionNames.compute);
+        this.options.remove(QueryOption.compute);
       }
     }
     if (query.transform !&#x3D;&#x3D; undefined) {
       if (query.transform !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.transform, query.transform);
+        this.options.option(QueryOption.transform, query.transform);
       } else {
-        this.options.remove(QueryOptionNames.transform);
+        this.options.remove(QueryOption.transform);
       }
     }
     if (query.search !&#x3D;&#x3D; undefined) {
       if (query.search instanceof SearchExpression) {
         this.options.expression(
-          QueryOptionNames.search,
-          query.search as SearchExpression&lt;T&gt;
+          QueryOption.search,
+          query.search as SearchExpression&lt;T&gt;,
         );
       } else if (query.search !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.search, query.search);
+        this.options.option(QueryOption.search, query.search);
       } else {
-        this.options.remove(QueryOptionNames.search);
+        this.options.remove(QueryOption.search);
       }
     }
     if (query.filter !&#x3D;&#x3D; undefined) {
       if (query.filter instanceof FilterExpression) {
         this.options.expression(
-          QueryOptionNames.filter,
-          query.filter as FilterExpression&lt;T&gt;
+          QueryOption.filter,
+          query.filter as FilterExpression&lt;T&gt;,
         );
       } else if (query.filter !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.filter, query.filter);
+        this.options.option(QueryOption.filter, query.filter);
       } else {
-        this.options.remove(QueryOptionNames.filter);
+        this.options.remove(QueryOption.filter);
       }
     }
     if (query.orderBy !&#x3D;&#x3D; undefined) {
       if (query.orderBy instanceof OrderByExpression) {
         this.options.expression(
-          QueryOptionNames.orderBy,
-          query.orderBy as OrderByExpression&lt;T&gt;
+          QueryOption.orderBy,
+          query.orderBy as OrderByExpression&lt;T&gt;,
         );
       } else if (query.orderBy !&#x3D;&#x3D; null) {
-        this.options.option(QueryOptionNames.orderBy, query.orderBy);
+        this.options.option(QueryOption.orderBy, query.orderBy);
       } else {
-        this.options.remove(QueryOptionNames.orderBy);
+        this.options.remove(QueryOption.orderBy);
       }
     }
     this.paging(query);

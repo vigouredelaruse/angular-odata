@@ -12,8 +12,66 @@
         <link rel="stylesheet" href="../styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
             <a href="../" class="navbar-brand">angular-odata documentation</a>
             <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
         </div>
@@ -43,21 +101,27 @@
 
 
 <ol class="breadcrumb">
-  <li>Classes</li>
-  <li >ODataResponse</li>
+  <li class="breadcrumb-item">Classes</li>
+  <li class="breadcrumb-item" >ODataResponse</li>
 </ol>
 
 <ul class="nav nav-tabs" role="tablist">
-        <li class="active">
-            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
         </li>
-        <li >
-            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
         </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active in" id="c-info">
+    <div class="tab-pane fade active in" id="info">
         <p class="comment">
             <h3>File</h3>
         </p>
@@ -78,12 +142,12 @@
                 <h3>Extends</h3>
             </p>
             <p class="comment">
-                        <code><a href="../miscellaneous/variables.html#Http" target="_self" >HttpResponse</a></code>
+                            <code><a href="../miscellaneous/variables.html#Http" target="_self" >HttpResponse</a></code>
             </p>
 
 
 
-            <section>
+            <section data-compodoc="block-index">
     <h3 id="index">Index</h3>
     <table class="table table-sm table-bordered index-table">
         <tbody>
@@ -147,13 +211,13 @@
                             </li>
                             <li>
                                     <span class="modifier">Static</span>
-                                <a href="#fromJSON" >fromJSON</a>
+                                <a href="#fromJson" >fromJson</a>
                             </li>
                             <li>
                                 <a href="#property" >property</a>
                             </li>
                             <li>
-                                <a href="#toJSON" >toJSON</a>
+                                <a href="#toJson" >toJson</a>
                             </li>
                             <li>
                                 <a href="#value" >value</a>
@@ -193,7 +257,7 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-constructor">
     <h3 id="constructor">Constructor</h3>
         <table class="table table-sm table-bordered">
             <tbody>
@@ -204,7 +268,7 @@
                 </tr>
                         <tr>
                             <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:30</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:31</a></div>
                             </td>
                         </tr>
 
@@ -242,7 +306,7 @@
         </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-properties">
     
     <h3 id="inputs">
         Properties
@@ -268,7 +332,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="146" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:146</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="155" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:155</a></div>
                         </td>
                     </tr>
 
@@ -296,7 +360,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="136" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:136</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="145" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:145</a></div>
                         </td>
                     </tr>
 
@@ -318,13 +382,13 @@
             </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../interfaces/ResponseOptions.html" target="_self" >ODataResponseOptions</a></code>
+                        <i>Type : </i>        <code><a href="../classes/ODataResponseOptions.html" target="_self" >ODataResponseOptions</a></code>
 
                     </td>
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="92" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:92</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="93" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:93</a></div>
                         </td>
                     </tr>
 
@@ -352,7 +416,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="125" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:125</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="134" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:134</a></div>
                         </td>
                     </tr>
 
@@ -379,7 +443,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:29</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:30</a></div>
                         </td>
                     </tr>
 
@@ -406,7 +470,7 @@
                 </tr>
                     <tr>
                         <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:30</a></div>
+                                <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:31</a></div>
                         </td>
                     </tr>
 
@@ -415,7 +479,7 @@
     </table>
 </section>
 
-            <section>
+            <section data-compodoc="block-methods">
     
     <h3 id="methods">
         Methods
@@ -438,28 +502,26 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="193"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:193</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="202"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:202</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Handle the response body as entities</p>
+                        <div class="io-description"><p>Handle the response body as entities</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataEntities&lt;T&gt;</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataEntities&lt;T&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -482,28 +544,26 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="169"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:169</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="178"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:178</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Handle the response body as an entity</p>
+                        <div class="io-description"><p>Handle the response body as an entity</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataEntity&lt;T&gt;</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataEntity&lt;T&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -514,7 +574,7 @@
                 <td class="col-md-4">
                     <a name="fromHttpResponse"></a>
                     <span class="name">
-                        <span class="modifier">Static</span>
+                            <span class="modifier">Static</span>
                         <span ><b>fromHttpResponse</b></span>
                         <a href="#fromHttpResponse"><span class="icon ion-ios-link"></span></a>
                     </span>
@@ -522,79 +582,77 @@
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
                     <code>fromHttpResponse(req: <a href="../classes/ODataRequest.html" target="_self">ODataRequest&lt;T&gt;</a>, res: <a href="../objects/Http.html" target="_self">HttpResponse&lt;T&gt;</a>)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="46"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:46</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="47"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:47</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>T</li>
+                            </ul>
+                        </td>
+                    </tr>
 
             <tr>
                 <td class="col-md-4">
-                    <b>Type parameters :</b>
-                    <ul class="type-parameters">
-                        <li>T</li>
-                    </ul>
-                </td>
-            </tr>
 
-            <tr>
-                <td class="col-md-4">
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>req</td>
+                                            <td>
+                                                            <code><a href="../classes/ODataRequest.html" target="_self" >ODataRequest&lt;T&gt;</a></code>
+                                            </td>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>req</td>
-                                    <td>
-                                                <code><a href="../classes/ODataRequest.html" target="_self" >ODataRequest&lt;T&gt;</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                                <tr>
-                                    <td>res</td>
-                                    <td>
-                                                <code><a href="../miscellaneous/variables.html#Http" target="_self" >HttpResponse&lt;T&gt;</a></code>
-                                    </td>
+                                        </tr>
+                                        <tr>
+                                                <td>res</td>
+                                            <td>
+                                                            <code><a href="../miscellaneous/variables.html#Http" target="_self" >HttpResponse&lt;T&gt;</a></code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/ODataResponse.html" target="_self" >ODataResponse&lt;T&gt;</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/ODataResponse.html" target="_self" >ODataResponse&lt;T&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -603,89 +661,87 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="fromJSON"></a>
+                    <a name="fromJson"></a>
                     <span class="name">
-                        <span class="modifier">Static</span>
-                        <span ><b>fromJSON</b></span>
-                        <a href="#fromJSON"><span class="icon ion-ios-link"></span></a>
+                            <span class="modifier">Static</span>
+                        <span ><b>fromJson</b></span>
+                        <a href="#fromJson"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-                    <span class="modifier-icon icon ion-ios-reset"></span>
-                    <code>fromJSON(req: <a href="../classes/ODataRequest.html" target="_self">ODataRequest&lt;T&gt;</a>, json: literal type)</code>
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>fromJson(req: <a href="../classes/ODataRequest.html" target="_self">ODataRequest&lt;T&gt;</a>, json: literal type)</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="58"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:58</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="59"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:59</a></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-md-4">
+                            <b>Type parameters :</b>
+                            <ul class="type-parameters">
+                                    <li>T</li>
+                            </ul>
+                        </td>
+                    </tr>
 
             <tr>
                 <td class="col-md-4">
-                    <b>Type parameters :</b>
-                    <ul class="type-parameters">
-                        <li>T</li>
-                    </ul>
-                </td>
-            </tr>
 
-            <tr>
-                <td class="col-md-4">
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>req</td>
+                                            <td>
+                                                            <code><a href="../classes/ODataRequest.html" target="_self" >ODataRequest&lt;T&gt;</a></code>
+                                            </td>
 
-                    <div class="io-description">
-                        <b>Parameters :</b>
-                        
-                        <table class="params">
-                            <thead>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>Type</td>
-                                    <td>Optional</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>req</td>
-                                    <td>
-                                                <code><a href="../classes/ODataRequest.html" target="_self" >ODataRequest&lt;T&gt;</a></code>
-                                    </td>
-
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                                <tr>
-                                    <td>json</td>
-                                    <td>
-                                            <code>literal type</code>
-                                    </td>
+                                        </tr>
+                                        <tr>
+                                                <td>json</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
 
-                                    <td>
-                                        No
-                                    </td>
+                                            <td>
+                                                    No
+                                            </td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../classes/ODataResponse.html" target="_self" >ODataResponse&lt;T&gt;</a></code>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../classes/ODataResponse.html" target="_self" >ODataResponse&lt;T&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -708,28 +764,26 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="211"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:211</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="220"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:220</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Handle the response body as a property</p>
+                        <div class="io-description"><p>Handle the response body as a property</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataProperty&lt;T&gt;</a></code>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="../miscellaneous/variables.html#OData" target="_self" >ODataProperty&lt;T&gt;</a></code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -738,35 +792,35 @@
         <tbody>
             <tr>
                 <td class="col-md-4">
-                    <a name="toJSON"></a>
+                    <a name="toJson"></a>
                     <span class="name">
-                        <span ><b>toJSON</b></span>
-                        <a href="#toJSON"><span class="icon ion-ios-link"></span></a>
+                        <span ><b>toJson</b></span>
+                        <a href="#toJson"><span class="icon ion-ios-link"></span></a>
                     </span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-4">
-<code>toJSON()</code>
+<code>toJson()</code>
                 </td>
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="79"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:79</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="80"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:80</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
 
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>{ body: any; headers: any; status: any; statusText: any; url: any; }</code>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>{ body: any; headers: any; status: any; statusText: any; url: any; }</code>
 
-                    </div>
+                        </div>
                 </td>
             </tr>
         </tbody>
@@ -789,28 +843,26 @@
             </tr>
 
 
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="235"
-                            class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:235</a></div>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="247"
+                                    class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:247</a></div>
+                        </td>
+                    </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-description"><p>Handle the response body as a value</p>
+                        <div class="io-description"><p>Handle the response body as a value</p>
 </div>
 
-                    <div>
-                    </div>
-                    <div class="io-description">
-                        <b>Returns : </b>    <code>T | null</code>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>T | null</code>
 
-                    </div>
-                    <div class="io-description">
-                        
-                    </div>
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
                 </td>
             </tr>
         </tbody>
@@ -821,7 +873,7 @@
 
 
 
-            <section>
+            <section data-compodoc="block-accessors">
     <h3 id="accessors">
         Accessors
     </h3>
@@ -841,7 +893,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="93" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:93</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="94" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:94</a></div>
                                 </td>
                             </tr>
 
@@ -863,7 +915,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="126" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:126</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="135" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:135</a></div>
                                 </td>
                             </tr>
 
@@ -885,7 +937,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="137" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:137</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="146" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:146</a></div>
                                 </td>
                             </tr>
 
@@ -907,7 +959,7 @@
                 </tr>
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="147" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:147</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="156" class="link-to-prism">projects/angular-odata/src/lib/resources/responses/response.ts:156</a></div>
                                 </td>
                             </tr>
 
@@ -917,7 +969,7 @@
     </div>
 
 
-    <div class="tab-pane fade  tab-source-code" id="c-source">
+    <div class="tab-pane fade  tab-source-code" id="source">
         <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { HttpHeaders, HttpResponse } from &#x27;@angular/common/http&#x27;;
 import {
   ODataEntityAnnotations,
@@ -935,6 +987,7 @@ import {
   LOCATION_HEADER,
   ETAG_HEADERS,
   ODATA_ENTITYID_HEADERS,
+  PREFERENCE_APPLIED,
 } from &#x27;../../constants&#x27;;
 import { ODataApi } from &#x27;../../api&#x27;;
 import { ODataRequest } from &#x27;../request&#x27;;
@@ -975,7 +1028,7 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
     });
   }
 
-  static fromJSON&lt;T&gt;(
+  static fromJson&lt;T&gt;(
     req: ODataRequest&lt;T&gt;,
     json: {
       body: T | null;
@@ -983,7 +1036,7 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
       status: number;
       statusText: string;
       url: string | null;
-    }
+    },
   ) {
     return new ODataResponse&lt;T&gt;({
       api: req.api,
@@ -996,7 +1049,7 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
     });
   }
 
-  toJSON() {
+  toJson() {
     return {
       body: this.body,
       headers: this.headers
@@ -1020,13 +1073,21 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
           .find((p) &#x3D;&gt; p.startsWith(APPLICATION_JSON)) as string;
         this._options.setFeatures(features);
       }
-      const header &#x3D; Http.resolveHeaderKey(this.headers, ODATA_VERSION_HEADERS);
-      if (header) {
-        const version &#x3D; (this.headers.get(header) || &#x27;&#x27;).replace(/\;/g, &#x27;&#x27;) as
-          | &#x27;2.0&#x27;
-          | &#x27;3.0&#x27;
-          | &#x27;4.0&#x27;;
+      const headerKey &#x3D; Http.resolveHeaderKey(
+        this.headers,
+        ODATA_VERSION_HEADERS,
+      );
+      if (headerKey) {
+        const version &#x3D; (this.headers.get(headerKey) || &#x27;&#x27;).replace(
+          /\;/g,
+          &#x27;&#x27;,
+        ) as &#x27;2.0&#x27; | &#x27;3.0&#x27; | &#x27;4.0&#x27;;
         this._options.setVersion(version);
+      }
+
+      const preferenceApplied &#x3D; this.headers.get(PREFERENCE_APPLIED);
+      if (preferenceApplied) {
+        this._options.setPreferenceApplied(preferenceApplied);
       }
 
       const location &#x3D; this.headers.get(LOCATION_HEADER);
@@ -1057,7 +1118,7 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
   get context(): ODataContext {
     if (this._context &#x3D;&#x3D;&#x3D; undefined) {
       this._context &#x3D; this.options.helper.context(
-        Types.isPlainObject(this.payload) ? this.payload : {}
+        Types.isPlainObject(this.payload) ? this.payload : {},
       );
     }
     return this._context;
@@ -1089,10 +1150,10 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
   entity(): ODataEntity&lt;T&gt; {
     const options &#x3D; this.options;
     const payload &#x3D; this.payload;
-    const annots &#x3D; new ODataEntityAnnotations(
+    const annots &#x3D; new ODataEntityAnnotations&lt;T&gt;(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     const data &#x3D; payload ? annots.data(payload) : null;
     let entity &#x3D; (
@@ -1113,10 +1174,10 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
   entities(): ODataEntities&lt;T&gt; {
     const options &#x3D; this.options;
     const payload &#x3D; this.payload;
-    const annots &#x3D; new ODataEntitiesAnnotations(
+    const annots &#x3D; new ODataEntitiesAnnotations&lt;T&gt;(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     let entities &#x3D; payload ? annots.data(payload) : null;
     if (entities !&#x3D;&#x3D; null)
@@ -1131,15 +1192,18 @@ export class ODataResponse&lt;T&gt; extends HttpResponse&lt;T&gt; {
   property(): ODataProperty&lt;T&gt; {
     const options &#x3D; this.options;
     const payload &#x3D; this.payload;
-    const annots &#x3D; new ODataPropertyAnnotations(
+    const annots &#x3D; new ODataPropertyAnnotations&lt;T&gt;(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     const data &#x3D; payload ? (annots.data(payload) as T) : null;
     let property &#x3D; (
       data !&#x3D;&#x3D; null &amp;&amp; Types.isPlainObject(data)
-        ? options.helper.attributes(data, this.api.options.stripMetadata)
+        ? options.helper.attributes(
+            data as { [name: string]: any },
+            this.api.options.stripMetadata,
+          )
         : data
     ) as T | null;
 

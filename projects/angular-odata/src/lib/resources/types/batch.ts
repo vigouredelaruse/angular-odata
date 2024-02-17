@@ -4,7 +4,7 @@ import {
   HttpResponse,
   HttpResponseBase,
 } from '@angular/common/http';
-import { firstValueFrom, map, Observable, of, Subject, switchMap } from 'rxjs';
+import { map, Observable, Subject } from 'rxjs';
 import { ODataApi } from '../../api';
 import {
   $BATCH,
@@ -27,7 +27,7 @@ import {
   VERSION_4_0,
   XSSI_PREFIX,
 } from '../../constants';
-import { PathSegmentNames } from '../../types';
+import { PathSegment } from '../../types';
 import { Arrays } from '../../utils/arrays';
 import { Http } from '../../utils/http';
 import { Strings } from '../../utils/strings';
@@ -36,16 +36,27 @@ import { ODataRequest } from '../request';
 import { ODataResource } from '../resource';
 import { ODataResponse } from '../responses';
 import { ODataOptions } from './options';
+import { ODataApiOptions } from '../../options';
 
 export class ODataBatchRequest<T> extends Subject<HttpResponseBase> {
+  id: string;
+  group: string;
   constructor(public request: ODataRequest<any>) {
     super();
+    this.id = Strings.uniqueId({ prefix: 'r' });
+    this.group = Strings.uniqueId({ prefix: 'g' });
   }
 
   override toString() {
+    return this.toLegacy();
+  }
+
+  toLegacy({ relativeUrls }: { relativeUrls?: boolean } = {}): string {
     //TODO: Relative or Absolute url ?
     let res = [
-      `${this.request.method} ${this.request.pathWithParams} ${HTTP11}`,
+      `${this.request.method} ${
+        relativeUrls ? this.request.pathWithParams : this.request.urlWithParams
+      } ${HTTP11}`,
     ];
     if (
       this.request.method === 'POST' ||
@@ -65,7 +76,36 @@ export class ODataBatchRequest<T> extends Subject<HttpResponseBase> {
       ];
     }
 
+    if (this.request.method === 'GET' || this.request.method === 'DELETE') {
+      res.push(NEWLINE);
+    } else {
+      res.push(`${NEWLINE}${JSON.stringify(this.request.body)}`);
+    }
+
     return res.join(NEWLINE);
+  }
+
+  toJson({ relativeUrls }: { relativeUrls?: boolean } = {}) {
+    let res: { [name: string]: any } = {
+      id: this.id,
+      method: this.request.method,
+      url: relativeUrls
+        ? this.request.pathWithParams
+        : this.request.urlWithParams,
+      //'atomicityGroup': this.group
+      //"dependsOn": ["g1", "g2", "r2"]
+    };
+    if (this.request.headers instanceof HttpHeaders) {
+      let headers = this.request.headers;
+      res['headers'] = headers
+        .keys()
+        .map((key) => `${key}: ${(headers.getAll(key) || []).join(',')}`);
+    }
+    if (!(this.request.method === 'GET' || this.request.method === 'DELETE')) {
+      res['body'] = this.request.body;
+    }
+
+    return res;
   }
 
   onLoad(response: HttpResponseBase) {
@@ -102,7 +142,7 @@ export class ODataBatchResource extends ODataResource<any> {
   //#region Factory
   static factory(api: ODataApi) {
     let segments = new ODataPathSegments();
-    segments.add(PathSegmentNames.batch, $BATCH);
+    segments.add(PathSegment.batch, $BATCH);
     return new ODataBatchResource(api, { segments });
   }
 
@@ -138,54 +178,96 @@ export class ODataBatchResource extends ODataResource<any> {
    * @param ctx The context for the request
    * @returns The result of execute the context
    */
-  add<R>(ctx: (batch: this) => Observable<R>): Observable<R> {
+  add<R>(ctx: (batch: this) => R): R {
     // Store original requester
     var handler = this.storeRequester();
     // Execute the context
-    const obs$ = ctx(this);
+    const result = ctx(this);
     // Restore original requester
     this.restoreRequester(handler);
 
-    return obs$;
+    return result;
   }
 
-  send(options?: ODataOptions): Observable<null | ODataResponse<string>> {
-    if (this._requests.length == 0) {
-      return of(null);
+  send(options?: ODataOptions): Observable<ODataResponse<any>> {
+    if (this.api.options.jsonBatchFormat) {
+      return this.sendJson(options);
+    } else {
+      return this.sendLegacy(options);
     }
+  }
 
-    const bound = Strings.uniqueId(BATCH_PREFIX);
+  private sendJson(options?: ODataOptions): Observable<ODataResponse<Object>> {
+    const headers = Http.mergeHttpHeaders((options && options.headers) || {}, {
+      [ODATA_VERSION]: VERSION_4_0,
+    });
+    return this.api
+      .request<object>('POST', this, {
+        body: ODataBatchResource.buildJsonBody(
+          this._requests,
+          this.api.options
+        ),
+        responseType: 'json',
+        observe: 'response',
+        headers: headers,
+        params: options ? options.params : undefined,
+        withCredentials: options ? options.withCredentials : undefined,
+      })
+      .pipe(
+        map((response: ODataResponse<Object>) => {
+          if (this._responses == null) {
+            this._responses = [];
+          }
+          this._responses = [
+            ...this._responses,
+            ...ODataBatchResource.parseJsonResponse(this._requests, response),
+          ];
+          //HACK: tuple[1] === undefined
+          Arrays.zip(this._requests, this._responses).forEach((tuple) => {
+            if (!tuple[0].isStopped && tuple[1]) tuple[0].onLoad(tuple[1]);
+          });
+          return response;
+        })
+      );
+  }
+
+  private sendLegacy(
+    options?: ODataOptions
+  ): Observable<ODataResponse<string>> {
+    const bound = Strings.uniqueId({ prefix: BATCH_PREFIX });
     const headers = Http.mergeHttpHeaders((options && options.headers) || {}, {
       [ODATA_VERSION]: VERSION_4_0,
       [CONTENT_TYPE]: MULTIPART_MIXED_BOUNDARY + bound,
       [ACCEPT]: MULTIPART_MIXED,
     });
-    const request = new ODataRequest({
-      method: 'POST',
-      body: ODataBatchResource.buildBody(bound, this._requests),
-      api: this.api,
-      resource: this,
-      observe: 'response',
-      responseType: 'text',
-      headers: headers,
-      params: options ? options.params : undefined,
-      withCredentials: options ? options.withCredentials : undefined,
-    });
-    return this.api.request(request).pipe(
-      map((response: ODataResponse<string>) => {
-        if (this._responses == null) {
-          this._responses = [];
-        }
-        this._responses = [
-          ...this._responses,
-          ...ODataBatchResource.parseResponse(this._requests, response),
-        ];
-        Arrays.zip(this._requests, this._responses).forEach((tuple) => {
-          if (!tuple[0].isStopped) tuple[0].onLoad(tuple[1]);
-        });
-        return response;
+    return this.api
+      .request<ODataResponse<string>>('POST', this, {
+        body: ODataBatchResource.buildLegacyBody(
+          bound,
+          this._requests,
+          this.api.options
+        ),
+        responseType: 'text',
+        observe: 'response',
+        headers: headers,
+        params: options ? options.params : undefined,
+        withCredentials: options ? options.withCredentials : undefined,
       })
-    );
+      .pipe(
+        map((response: ODataResponse<string>) => {
+          if (this._responses == null) {
+            this._responses = [];
+          }
+          this._responses = [
+            ...this._responses,
+            ...ODataBatchResource.parseLegacyResponse(this._requests, response),
+          ];
+          Arrays.zip(this._requests, this._responses).forEach((tuple) => {
+            if (!tuple[0].isStopped && tuple[1]) tuple[0].onLoad(tuple[1]);
+          });
+          return response;
+        })
+      );
   }
 
   /**
@@ -195,34 +277,37 @@ export class ODataBatchResource extends ODataResource<any> {
    * @returns The result of execute the context
    */
   exec<R>(
-    ctx: (batch: this) => Observable<R>,
+    ctx: (batch: this) => R,
     options?: ODataOptions
-  ): Observable<R> {
-    let ctx$ = this.add(ctx);
-    let send$ = this.send(options);
-    firstValueFrom(send$);
-    return ctx$;
-    //return this.send(options).pipe(switchMap(() => ctx$));
+  ): Observable<[R, ODataResponse<string>]> {
+    let result = this.add(ctx);
+    return this.send(options).pipe(map((response) => [result, response]));
   }
 
   body() {
-    return ODataBatchResource.buildBody(
-      Strings.uniqueId(BATCH_PREFIX),
-      this._requests
+    return ODataBatchResource.buildLegacyBody(
+      Strings.uniqueId({ prefix: BATCH_PREFIX }),
+      this._requests,
+      this.api.options
     );
   }
 
-  static buildBody(
+  json() {
+    return ODataBatchResource.buildJsonBody(this._requests, this.api.options);
+  }
+
+  static buildLegacyBody(
     batchBoundary: string,
-    requests: ODataBatchRequest<any>[]
+    requests: ODataBatchRequest<any>[],
+    options: ODataApiOptions
   ): string {
     let res = [];
     let changesetBoundary: string | null = null;
     let changesetId = 1;
 
-    for (const batch of requests) {
+    for (const request of requests) {
       // if method is GET and there is a changeset boundary open then close it
-      if (batch.request.method === 'GET' && changesetBoundary !== null) {
+      if (request.request.method === 'GET' && changesetBoundary !== null) {
         res.push(
           `${BOUNDARY_PREFIX_SUFFIX}${changesetBoundary}${BOUNDARY_PREFIX_SUFFIX}`
         );
@@ -235,9 +320,9 @@ export class ODataBatchResource extends ODataResource<any> {
       }
 
       // if method is not GET and there is no changeset boundary open then open a changeset boundary
-      if (batch.request.method !== 'GET') {
+      if (request.request.method !== 'GET') {
         if (changesetBoundary === null) {
-          changesetBoundary = Strings.uniqueId(CHANGESET_PREFIX);
+          changesetBoundary = Strings.uniqueId({ prefix: CHANGESET_PREFIX });
           res.push(
             `${CONTENT_TYPE}: ${MULTIPART_MIXED_BOUNDARY}${changesetBoundary}`
           );
@@ -249,18 +334,12 @@ export class ODataBatchResource extends ODataResource<any> {
       res.push(`${CONTENT_TYPE}: ${APPLICATION_HTTP}`);
       res.push(`${CONTENT_TRANSFER_ENCODING}: ${BINARY}`);
 
-      if (batch.request.method !== 'GET') {
+      if (request.request.method !== 'GET') {
         res.push(`${CONTENT_ID}: ${changesetId++}`);
       }
 
       res.push(NEWLINE);
-      res.push(`${batch}`);
-
-      if (batch.request.method === 'GET' || batch.request.method === 'DELETE') {
-        res.push(NEWLINE);
-      } else {
-        res.push(`${NEWLINE}${JSON.stringify(batch.request.body)}`);
-      }
+      res.push(`${request.toLegacy(options)}`);
     }
 
     if (res.length) {
@@ -277,7 +356,16 @@ export class ODataBatchResource extends ODataResource<any> {
     return res.join(NEWLINE);
   }
 
-  static parseResponse(
+  static buildJsonBody(
+    requests: ODataBatchRequest<any>[],
+    options: ODataApiOptions
+  ): Object {
+    return {
+      requests: requests.map((request) => request.toJson(options)),
+    };
+  }
+
+  static parseLegacyResponse(
     requests: ODataBatchRequest<any>[],
     response: ODataResponse<string>
   ): HttpResponseBase[] {
@@ -403,6 +491,56 @@ export class ODataBatchResource extends ODataResource<any> {
             headers,
             status: code,
             statusText: message,
+            url: request.urlWithParams,
+          });
+    });
+  }
+
+  static parseJsonResponse(
+    requests: ODataBatchRequest<any>[],
+    response: ODataResponse<any>
+  ): HttpResponseBase[] {
+    const responses: Object[] =
+      (response.body ? response.body : {})['responses'] ?? [];
+
+    return responses.map((response: any, index: number) => {
+      let request = requests[index].request;
+      let code = response['status'];
+
+      let headers: HttpHeaders = new HttpHeaders(response['headers']);
+      let body: string | { error: any; text: string } = response['body'];
+      if (code === 0) {
+        code = !!body ? 200 : 0;
+      }
+
+      let ok = code >= 200 && code < 300;
+      if (request.responseType === 'json' && typeof body === 'string') {
+        const originalBody = body;
+        body = body.replace(XSSI_PREFIX, '');
+        try {
+          body = body !== '' ? JSON.parse(body) : null;
+        } catch (error) {
+          body = originalBody;
+
+          if (ok) {
+            ok = false;
+            body = { error, text: body };
+          }
+        }
+      }
+
+      return ok
+        ? new HttpResponse<any>({
+            body,
+            headers,
+            status: code,
+            url: request.urlWithParams,
+          })
+        : new HttpErrorResponse({
+            // The error in this case is the response body (error from the server).
+            error: body,
+            headers,
+            status: code,
             url: request.urlWithParams,
           });
     });

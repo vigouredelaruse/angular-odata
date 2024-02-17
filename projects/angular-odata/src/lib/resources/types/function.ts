@@ -4,7 +4,7 @@ import { ODataApi } from '../../api';
 import { ODataCollection } from '../../models/collection';
 import { ODataModel } from '../../models/model';
 import { ODataCallable } from '../../schema/callable';
-import { PathSegmentNames } from '../../types';
+import { PathSegment } from '../../types';
 import { ODataPathSegments } from '../path';
 import { ODataQueryOptions } from '../query';
 import { ODataResource } from '../resource';
@@ -12,7 +12,6 @@ import { ODataEntities, ODataEntity, ODataProperty } from '../responses';
 import {
   ODataEntitiesOptions,
   ODataEntityOptions,
-  ODataNoneOptions,
   ODataOptions,
   ODataPropertyOptions,
 } from './options';
@@ -31,14 +30,14 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
       schema?: ODataCallable<R>;
       segments?: ODataPathSegments;
       query?: ODataQueryOptions<R>;
-    }
+    },
   ) {
     segments = segments || new ODataPathSegments();
     path = schema !== undefined ? schema.path() : path;
     if (path === undefined)
       throw new Error(`ODataActionResource: path is required`);
 
-    const segment = segments.add(PathSegmentNames.function, path);
+    const segment = segments.add(PathSegment.function, path);
     if (schema !== undefined) segment.type(schema.type());
     return new ODataFunctionResource<P, R>(api, {
       segments,
@@ -80,21 +79,6 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
       : undefined;
   }
 
-  override pathAndParams(
-    escape: boolean = false
-  ): [string, { [name: string]: any }] {
-    let [path, params] = super.pathAndParams(escape);
-
-    if (
-      path.endsWith('()') &&
-      this.api.options.nonParenthesisForEmptyParameterFunction
-    ) {
-      path = path.substring(0, path.length - 2);
-    }
-
-    return [path, params];
-  }
-
   parameters(params: P | null, { alias }: { alias?: boolean } = {}) {
     let parameters = params !== null ? this.encode(params) : null;
     if (alias && parameters !== null) {
@@ -109,7 +93,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
 
   //#region Requests
   protected override get(
-    options?: ODataEntityOptions & ODataEntitiesOptions & ODataPropertyOptions
+    options?: ODataEntityOptions & ODataEntitiesOptions & ODataPropertyOptions,
   ): Observable<any> {
     return super.get(options);
   }
@@ -124,29 +108,39 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   call(
     params: P | null,
-    options?: { alias?: boolean } & ODataEntityOptions
+    options?: { alias?: boolean } & ODataEntityOptions,
   ): Observable<ODataEntity<R>>;
   call(
     params: P | null,
-    options?: { alias?: boolean } & ODataEntitiesOptions
+    options?: { alias?: boolean } & ODataEntitiesOptions,
   ): Observable<ODataEntities<R>>;
   call(
     params: P | null,
-    options?: { alias?: boolean } & ODataPropertyOptions
+    options?: { alias?: boolean } & ODataPropertyOptions,
   ): Observable<ODataProperty<R>>;
   call(
     params: P | null,
-    options?: { alias?: boolean } & ODataNoneOptions
+    options?: { alias?: boolean; responseType?: 'blob' } & ODataOptions,
+  ): Observable<Blob>;
+  call(
+    params: P | null,
+    options?: { alias?: boolean; responseType?: 'arraybuffer' } & ODataOptions,
+  ): Observable<ArrayBuffer>;
+  call(
+    params: P | null,
+    options?: { alias?: boolean; responseType?: 'none' } & ODataOptions,
   ): Observable<null>;
   call(
     params: P | null,
     {
       alias,
       ...options
-    }: { alias?: boolean } & ODataEntityOptions &
+    }: {
+      alias?: boolean;
+      responseType?: 'blob' | 'arraybuffer';
+    } & ODataEntityOptions &
       ODataEntitiesOptions &
-      ODataPropertyOptions &
-      ODataNoneOptions = {}
+      ODataPropertyOptions = {},
   ): Observable<any> {
     return this.parameters(params, { alias }).get(options);
   }
@@ -160,7 +154,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   callProperty(
     params: P | null,
-    { alias, ...options }: { alias?: boolean } & ODataOptions = {}
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
   ): Observable<R | null> {
     return this.call(params, {
       responseType: 'property',
@@ -178,7 +172,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   callEntity(
     params: P | null,
-    { alias, ...options }: { alias?: boolean } & ODataOptions = {}
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
   ): Observable<R | null> {
     return this.call(params, {
       responseType: 'entity',
@@ -196,7 +190,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   callModel<M extends ODataModel<R>>(
     params: P | null,
-    { alias, ...options }: { alias?: boolean } & ODataOptions = {}
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
   ): Observable<M | null> {
     return this.call(params, {
       responseType: 'entity',
@@ -204,8 +198,8 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
       ...options,
     }).pipe(
       map(({ entity, annots }) =>
-        entity ? this.asModel<M>(entity, { annots, reset: true }) : null
-      )
+        entity ? this.asModel<M>(entity, { annots }) : null,
+      ),
     );
   }
 
@@ -218,7 +212,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   callEntities(
     params: P | null,
-    { alias, ...options }: { alias?: boolean } & ODataOptions = {}
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
   ): Observable<R[] | null> {
     return this.call(params, {
       responseType: 'entities',
@@ -236,7 +230,7 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
    */
   callCollection<M extends ODataModel<R>, C extends ODataCollection<R, M>>(
     params: P | null,
-    { alias, ...options }: { alias?: boolean } & ODataOptions = {}
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
   ): Observable<C | null> {
     return this.call(params, {
       responseType: 'entities',
@@ -244,11 +238,27 @@ export class ODataFunctionResource<P, R> extends ODataResource<R> {
       ...options,
     }).pipe(
       map(({ entities, annots }) =>
-        entities
-          ? this.asCollection<M, C>(entities, { annots, reset: true })
-          : null
-      )
+        entities ? this.asCollection<M, C>(entities, { annots }) : null,
+      ),
     );
   }
   //#endregion
+
+  callArraybuffer(
+    params: P | null,
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
+  ): Observable<ArrayBuffer> {
+    return this.call(params, {
+      responseType: 'arraybuffer',
+      alias,
+      ...options,
+    });
+  }
+
+  callBlob(
+    params: P | null,
+    { alias, ...options }: { alias?: boolean } & ODataOptions = {},
+  ): Observable<Blob> {
+    return this.call(params, { responseType: 'blob', alias, ...options });
+  }
 }

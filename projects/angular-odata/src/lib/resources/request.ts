@@ -1,4 +1,4 @@
-import { HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { ODataApi } from '../api';
 import {
   $BATCH,
@@ -9,16 +9,18 @@ import {
   PREFER,
   TEXT_PLAIN,
 } from '../constants';
-import { QueryOptionNames } from '../types';
-import { Http } from '../utils';
+import { FetchPolicy, ParserOptions, QueryOption } from '../types';
+import { Http, Types } from '../utils';
 import { ODataResource } from './resource';
+import { ODataOptions } from './types';
 
 export class ODataRequest<T> {
   readonly api: ODataApi;
   readonly observe: 'events' | 'response';
+  readonly context?: HttpContext;
   readonly reportProgress?: boolean;
   readonly withCredentials?: boolean;
-  readonly bodyQueryOptions: QueryOptionNames[];
+  readonly bodyQueryOptions: QueryOption[];
   readonly fetchPolicy:
     | 'cache-first'
     | 'cache-and-network'
@@ -47,10 +49,19 @@ export class ODataRequest<T> {
     resource: ODataResource<T>;
     body: any;
     observe: 'events' | 'response';
+    context?: HttpContext;
     etag?: string;
     headers?: HttpHeaders | { [header: string]: string | string[] };
     reportProgress?: boolean;
-    params?: HttpParams | { [param: string]: string | string[] };
+    params?:
+      | HttpParams
+      | {
+          [param: string]:
+            | string
+            | number
+            | boolean
+            | ReadonlyArray<string | number | boolean>;
+        };
     responseType?:
       | 'arraybuffer'
       | 'blob'
@@ -60,14 +71,10 @@ export class ODataRequest<T> {
       | 'property'
       | 'entity'
       | 'entities';
-    fetchPolicy?:
-      | 'cache-first'
-      | 'cache-and-network'
-      | 'network-only'
-      | 'no-cache'
-      | 'cache-only';
+    fetchPolicy?: FetchPolicy;
+    parserOptions?: ParserOptions;
     withCredentials?: boolean;
-    bodyQueryOptions?: QueryOptionNames[];
+    bodyQueryOptions?: QueryOption[];
   }) {
     this._method = init.method;
     this.resource = init.resource;
@@ -75,24 +82,30 @@ export class ODataRequest<T> {
     this.api = init.api;
     this.reportProgress = init.reportProgress;
     this.observe = init.observe;
+    this.context = init.context;
 
     // Response Type
     this._responseType = init.responseType;
 
     // The Body
     this._body = init.body !== undefined ? init.body : null;
-    if (this._body !== null) this._body = this.resource.serialize(this._body);
+    if (this._body !== null)
+      this._body = this.resource.serialize(this._body, init.parserOptions);
 
     this.withCredentials =
       init.withCredentials === undefined
         ? this.api.options.withCredentials
         : init.withCredentials;
     this.fetchPolicy = init.fetchPolicy || this.api.options.fetchPolicy;
-    this.bodyQueryOptions = 
-      [...(this.api.options.bodyQueryOptions || []), ...(init.bodyQueryOptions || [])];
+    this.bodyQueryOptions = [
+      ...(this.api.options.bodyQueryOptions || []),
+      ...(init.bodyQueryOptions || []),
+    ];
 
     // The Path and Params from resource
-    const [resourcePath, resourceParams] = this.resource.pathAndParams();
+    const [resourcePath, resourceParams] = this.resource.pathAndParams(
+      init.parserOptions,
+    );
     this._path = resourcePath;
 
     //#region Headers
@@ -117,7 +130,7 @@ export class ODataRequest<T> {
     // IEEE754
     if (this.api.options.accept?.ieee754Compatible !== undefined)
       accept.push(
-        `IEEE754Compatible=${this.api.options.accept?.ieee754Compatible}`
+        `IEEE754Compatible=${this.api.options.accept?.ieee754Compatible}`,
       );
     // streaming
     if (this.api.options.accept?.streaming !== undefined)
@@ -125,7 +138,7 @@ export class ODataRequest<T> {
     // ExponentialDecimals
     if (this.api.options.accept?.exponentialDecimals !== undefined)
       accept.push(
-        `ExponentialDecimals=${this.api.options.accept?.exponentialDecimals}`
+        `ExponentialDecimals=${this.api.options.accept?.exponentialDecimals}`,
       );
     if (accept.length > 0)
       customHeaders[ACCEPT] = [
@@ -153,8 +166,15 @@ export class ODataRequest<T> {
       ['GET'].indexOf(this._method) !== -1
     )
       prefer.push(
-        `odata.include-annotations=${this.api.options.prefer?.includeAnnotations}`
+        `odata.include-annotations=${this.api.options.prefer?.includeAnnotations}`,
       );
+    // Omit Null Values
+    if (
+      this.api.options.prefer?.omitNullValues === true &&
+      ['GET'].indexOf(this._method) !== -1
+    )
+      prefer.push(`omit-values=nulls`);
+    // Continue on Error
     if (
       this.api.options.prefer?.continueOnError === true &&
       ['POST'].indexOf(this._method) !== -1
@@ -164,7 +184,7 @@ export class ODataRequest<T> {
     this._headers = Http.mergeHttpHeaders(
       this.api.options.headers,
       customHeaders,
-      init.headers || {}
+      init.headers || {},
     );
     //#endregion
 
@@ -186,7 +206,7 @@ export class ODataRequest<T> {
     const params = Http.mergeHttpParams(
       this.api.options.params,
       customParams,
-      init.params || {}
+      init.params || {},
     );
 
     this._params =
@@ -200,7 +220,57 @@ export class ODataRequest<T> {
           ])
         : params;
     //#endregion
+  }
 
+  static factory(
+    api: ODataApi,
+    method: string,
+    resource: ODataResource<any>,
+    options: ODataOptions & {
+      body?: any;
+      etag?: string;
+      responseType?:
+        | 'arraybuffer'
+        | 'blob'
+        | 'json'
+        | 'text'
+        | 'value'
+        | 'property'
+        | 'entity'
+        | 'entities';
+      observe: 'events' | 'response';
+      withCount?: boolean;
+      bodyQueryOptions?: QueryOption[];
+    },
+  ) {
+    const apiOptions = api.options;
+    let params = options.params || {};
+    if (options.withCount) {
+      params = Http.mergeHttpParams(params, apiOptions.helper.countParam());
+    }
+
+    let etag = options.etag;
+    if (etag === undefined && Types.isPlainObject(options.body)) {
+      etag = apiOptions.helper.etag(options.body);
+    }
+
+    return new ODataRequest({
+      method,
+      etag,
+      api,
+      resource,
+      params,
+      context: options.context,
+      body: options.body,
+      observe: options.observe,
+      headers: options.headers,
+      reportProgress: options.reportProgress,
+      responseType: options.responseType,
+      fetchPolicy: options.fetchPolicy,
+      parserOptions: options.parserOptions,
+      withCredentials: options.withCredentials,
+      bodyQueryOptions: options.bodyQueryOptions,
+    });
   }
 
   get responseType(): 'arraybuffer' | 'blob' | 'json' | 'text' {
@@ -221,31 +291,33 @@ export class ODataRequest<T> {
   }
 
   get body() {
-    return (this.isQueryBody()) ?
-      Http.splitHttpParams(
-        this._params,
-        this.bodyQueryOptions.map((name) => `$${name}`)
-      )[1].toString() :
-      this._body;
+    return this.isQueryBody()
+      ? Http.splitHttpParams(
+          this._params,
+          this.bodyQueryOptions.map((name) => `$${name}`),
+        )[1].toString()
+      : this._body;
   }
 
   get params() {
-    return (this.isQueryBody()) ?
-      Http.splitHttpParams(
-        this._params,
-        this.bodyQueryOptions.map((name) => `$${name}`)
-      )[0] :
-      this._params;
+    return this.isQueryBody()
+      ? Http.splitHttpParams(
+          this._params,
+          this.bodyQueryOptions.map((name) => `$${name}`),
+        )[0]
+      : this._params;
   }
 
   get headers() {
-    return (this.isQueryBody()) ?
-      Http.mergeHttpHeaders(this._headers, { CONTENT_TYPE: TEXT_PLAIN }) :
-      this._headers;
+    return this.isQueryBody()
+      ? Http.mergeHttpHeaders(this._headers, { CONTENT_TYPE: TEXT_PLAIN })
+      : this._headers;
   }
 
   get pathWithParams() {
-    return (this.params.keys().length > 0) ? `${this.path}?${this.params}` : this.path;
+    return this.params.keys().length > 0
+      ? `${this.path}?${this.params}`
+      : this.path;
   }
 
   get url() {
@@ -257,13 +329,17 @@ export class ODataRequest<T> {
   }
 
   get cacheKey() {
-    return (this._params.keys().length > 0) ? `${this._path}?${this._params}` : this._path;
+    return this._params.keys().length > 0
+      ? `${this._path}?${this._params}`
+      : this._path;
   }
 
   isQueryBody() {
-    return this._method === 'GET' &&
+    return (
+      this._method === 'GET' &&
       this.bodyQueryOptions.length > 0 &&
-      this.bodyQueryOptions.some((name) => this._params.has(`$${name}`));
+      this.bodyQueryOptions.some((name) => this._params.has(`$${name}`))
+    );
   }
 
   isBatch() {

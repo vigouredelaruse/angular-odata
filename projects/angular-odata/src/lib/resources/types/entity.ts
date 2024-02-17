@@ -3,7 +3,7 @@ import { map } from 'rxjs/operators';
 import { ODataApi } from '../../api';
 import { ODataModel } from '../../models';
 import { ODataStructuredType } from '../../schema/structured-type';
-import { PathSegmentNames, QueryOptionNames } from '../../types';
+import { PathSegment, QueryOption } from '../../types';
 import { ODataPathSegments } from '../path';
 import { ODataQueryOptions } from '../query';
 import { ODataResource } from '../resource';
@@ -29,11 +29,7 @@ export class ODataEntityResource<T> extends ODataResource<T> {
       query?: ODataQueryOptions<E>;
     }
   ) {
-    query?.keep(
-      QueryOptionNames.expand,
-      QueryOptionNames.select,
-      QueryOptionNames.format
-    );
+    query?.keep(QueryOption.expand, QueryOption.select, QueryOption.format);
     return new ODataEntityResource<E>(api, { segments, query, schema });
   }
   override clone(): ODataEntityResource<T> {
@@ -86,15 +82,13 @@ export class ODataEntityResource<T> extends ODataResource<T> {
 
   cast<C>(type: string) {
     const baseSchema = this.schema as ODataStructuredType<T>;
-    const castSchema = this.api.findStructuredTypeForType<C>(type);
-    if (
-      castSchema !== undefined &&
-      baseSchema !== undefined &&
-      !castSchema.isSubtypeOf(baseSchema)
-    )
+    // Downcast
+    const castSchema = baseSchema?.findChildSchema((s) => s.isTypeOf(type));
+    // Upcast ?
+    if (castSchema !== undefined)
       throw new Error(`cast: Cannot cast to ${type}`);
     const segments = this.cloneSegments();
-    segments.add(PathSegmentNames.type, type).type(type);
+    segments.add(PathSegment.type, type).type(type);
     return new ODataEntityResource<C>(this.api, {
       segments,
       schema: castSchema,
@@ -106,36 +100,33 @@ export class ODataEntityResource<T> extends ODataResource<T> {
   protected override post(
     attrs: Partial<T>,
     options: ODataOptions = {}
-  ): Observable<ODataEntity<T>> {
+  ): Observable<any> {
     return super.post(attrs, { responseType: 'entity', ...options });
   }
 
   protected override put(
     attrs: Partial<T>,
-    options: ODataOptions & { etag?: string } = {}
-  ): Observable<ODataEntity<T>> {
+    options: ODataOptions = {}
+  ): Observable<any> {
     return super.put(attrs, { responseType: 'entity', ...options });
   }
 
   protected override patch(
     attrs: Partial<T>,
-    options: ODataOptions & { etag?: string } = {}
-  ): Observable<ODataEntity<T>> {
+    options: ODataOptions = {}
+  ): Observable<any> {
     return super.patch(attrs, { responseType: 'entity', ...options });
   }
 
-  protected override delete(
-    options: ODataOptions & { etag?: string } = {}
-  ): Observable<any> {
+  protected override delete(options: ODataOptions = {}): Observable<any> {
     return super.delete({ responseType: 'entity', ...options });
   }
 
   protected override get(
     options: ODataOptions & {
-      etag?: string;
-      bodyQueryOptions?: QueryOptionNames[];
+      bodyQueryOptions?: QueryOption[];
     } = {}
-  ): Observable<ODataEntity<T>> {
+  ): Observable<any> {
     return super.get({ responseType: 'entity', ...options });
   }
   //#endregion
@@ -150,26 +141,25 @@ export class ODataEntityResource<T> extends ODataResource<T> {
 
   update(
     attrs: Partial<T>,
-    options?: ODataOptions & { etag?: string }
+    options?: ODataOptions
   ): Observable<ODataEntity<T>> {
     return this.put(attrs, options);
   }
 
   modify(
     attrs: Partial<T>,
-    options?: ODataOptions & { etag?: string }
+    options?: ODataOptions
   ): Observable<ODataEntity<T>> {
     return this.patch(attrs, options);
   }
 
-  destroy(options?: ODataOptions & { etag?: string }): Observable<any> {
+  destroy(options?: ODataOptions): Observable<any> {
     return this.delete(options);
   }
 
   fetch(
     options?: ODataOptions & {
-      etag?: string;
-      bodyQueryOptions?: QueryOptionNames[];
+      bodyQueryOptions?: QueryOption[];
     }
   ): Observable<ODataEntity<T>> {
     if (!this.hasKey())
@@ -179,8 +169,7 @@ export class ODataEntityResource<T> extends ODataResource<T> {
 
   fetchEntity(
     options?: ODataOptions & {
-      etag?: string;
-      bodyQueryOptions?: QueryOptionNames[];
+      bodyQueryOptions?: QueryOption[];
     }
   ): Observable<T | null> {
     return this.fetch(options).pipe(map(({ entity }) => entity));
@@ -188,13 +177,12 @@ export class ODataEntityResource<T> extends ODataResource<T> {
 
   fetchModel<M extends ODataModel<T>>(
     options?: ODataOptions & {
-      etag?: string;
-      bodyQueryOptions?: QueryOptionNames[];
+      bodyQueryOptions?: QueryOption[];
     }
   ): Observable<M | null> {
     return this.fetch(options).pipe(
       map(({ entity, annots }) =>
-        entity ? this.asModel<M>(entity, { annots, reset: true }) : null
+        entity ? this.asModel<M>(entity, { annots }) : null
       )
     );
   }

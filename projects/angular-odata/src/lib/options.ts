@@ -4,7 +4,7 @@ import {
   ODataMetadataType,
   ODataVersion,
   ParserOptions,
-  QueryOptionNames,
+  QueryOption,
 } from './types';
 import {
   DEFAULT_FETCH_POLICY,
@@ -24,9 +24,26 @@ export class ODataApiOptions implements ApiOptions {
    */
   stringAsEnum: boolean;
   /**
+   * Delete reference by path or by id
+   */
+  deleteRefBy: 'path' | 'id';
+  /**
+   * No use parenthesis for empty parameters functions
+   */
+  nonParenthesisForEmptyParameterFunction: boolean;
+  /**
    * Strip metadata from the response
    */
   stripMetadata: ODataMetadataType;
+  /**
+   * Use JSON Batch Format
+   */
+  jsonBatchFormat: boolean;
+  /**
+   * Relative urls
+   * http://docs.oasis-open.org/odata/odata-json-format/v4.0/cs01/odata-json-format-v4.0-cs01.html#_Toc365464682
+   */
+  relativeUrls: boolean;
   /**
    * Cache fetch policy
    */
@@ -46,7 +63,7 @@ export class ODataApiOptions implements ApiOptions {
   /**
    * Send query options in the request body
    */
-  bodyQueryOptions: QueryOptionNames[];
+  bodyQueryOptions: QueryOption[];
   /**
    * Customize accept header with OData options
    * @link http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html#sec_RequestingtheJSONFormat
@@ -84,9 +101,11 @@ export class ODataApiOptions implements ApiOptions {
      * @link http://docs.oasis-open.org/odata/odata/v4.0/errata02/os/complete/part1-protocol/odata-v4.0-errata02-os-part1-protocol-complete.html#_Toc406398237
      */
     includeAnnotations?: string;
+    /**
+     * @link https://devblogs.microsoft.com/odata/extension-omit-null-value-properties-in-asp-net-core-odata/
+     */
+    omitNullValues?: boolean;
   };
-  deleteRefBy: 'path' | 'id';
-  nonParenthesisForEmptyParameterFunction: boolean;
 
   constructor(config: ApiOptions) {
     this.version = config.version || DEFAULT_VERSION;
@@ -100,13 +119,22 @@ export class ODataApiOptions implements ApiOptions {
     this.accept = config.accept;
     Object.assign(this.etag, config.etag || {});
     this.prefer = config.prefer;
-    this.deleteRefBy = config.deleteRefBy || 'path';
+    this.deleteRefBy = config.deleteRefBy ?? 'path';
     this.nonParenthesisForEmptyParameterFunction =
-      config.nonParenthesisForEmptyParameterFunction || false;
+      config.nonParenthesisForEmptyParameterFunction ?? false;
+    this.jsonBatchFormat = config.jsonBatchFormat ?? false;
+    this.relativeUrls = config.relativeUrls ?? true;
   }
 
   get parserOptions(): ParserOptions {
-    return { version: this.version, ...this.accept };
+    return {
+      version: this.version,
+      stringAsEnum: this.stringAsEnum,
+      deleteRefBy: this.deleteRefBy,
+      nonParenthesisForEmptyParameterFunction:
+        this.nonParenthesisForEmptyParameterFunction,
+      ...this.accept,
+    };
   }
 
   get helper() {

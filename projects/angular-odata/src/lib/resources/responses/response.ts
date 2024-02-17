@@ -15,6 +15,7 @@ import {
   LOCATION_HEADER,
   ETAG_HEADERS,
   ODATA_ENTITYID_HEADERS,
+  PREFERENCE_APPLIED,
 } from '../../constants';
 import { ODataApi } from '../../api';
 import { ODataRequest } from '../request';
@@ -55,7 +56,7 @@ export class ODataResponse<T> extends HttpResponse<T> {
     });
   }
 
-  static fromJSON<T>(
+  static fromJson<T>(
     req: ODataRequest<T>,
     json: {
       body: T | null;
@@ -63,7 +64,7 @@ export class ODataResponse<T> extends HttpResponse<T> {
       status: number;
       statusText: string;
       url: string | null;
-    }
+    },
   ) {
     return new ODataResponse<T>({
       api: req.api,
@@ -76,7 +77,7 @@ export class ODataResponse<T> extends HttpResponse<T> {
     });
   }
 
-  toJSON() {
+  toJson() {
     return {
       body: this.body,
       headers: this.headers
@@ -100,13 +101,21 @@ export class ODataResponse<T> extends HttpResponse<T> {
           .find((p) => p.startsWith(APPLICATION_JSON)) as string;
         this._options.setFeatures(features);
       }
-      const header = Http.resolveHeaderKey(this.headers, ODATA_VERSION_HEADERS);
-      if (header) {
-        const version = (this.headers.get(header) || '').replace(/\;/g, '') as
-          | '2.0'
-          | '3.0'
-          | '4.0';
+      const headerKey = Http.resolveHeaderKey(
+        this.headers,
+        ODATA_VERSION_HEADERS,
+      );
+      if (headerKey) {
+        const version = (this.headers.get(headerKey) || '').replace(
+          /\;/g,
+          '',
+        ) as '2.0' | '3.0' | '4.0';
         this._options.setVersion(version);
+      }
+
+      const preferenceApplied = this.headers.get(PREFERENCE_APPLIED);
+      if (preferenceApplied) {
+        this._options.setPreferenceApplied(preferenceApplied);
       }
 
       const location = this.headers.get(LOCATION_HEADER);
@@ -137,7 +146,7 @@ export class ODataResponse<T> extends HttpResponse<T> {
   get context(): ODataContext {
     if (this._context === undefined) {
       this._context = this.options.helper.context(
-        Types.isPlainObject(this.payload) ? this.payload : {}
+        Types.isPlainObject(this.payload) ? this.payload : {},
       );
     }
     return this._context;
@@ -169,10 +178,10 @@ export class ODataResponse<T> extends HttpResponse<T> {
   entity(): ODataEntity<T> {
     const options = this.options;
     const payload = this.payload;
-    const annots = new ODataEntityAnnotations(
+    const annots = new ODataEntityAnnotations<T>(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     const data = payload ? annots.data(payload) : null;
     let entity = (
@@ -193,10 +202,10 @@ export class ODataResponse<T> extends HttpResponse<T> {
   entities(): ODataEntities<T> {
     const options = this.options;
     const payload = this.payload;
-    const annots = new ODataEntitiesAnnotations(
+    const annots = new ODataEntitiesAnnotations<T>(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     let entities = payload ? annots.data(payload) : null;
     if (entities !== null)
@@ -211,15 +220,18 @@ export class ODataResponse<T> extends HttpResponse<T> {
   property(): ODataProperty<T> {
     const options = this.options;
     const payload = this.payload;
-    const annots = new ODataPropertyAnnotations(
+    const annots = new ODataPropertyAnnotations<T>(
       options.helper,
       this.annotations,
-      this.context
+      this.context,
     );
     const data = payload ? (annots.data(payload) as T) : null;
     let property = (
       data !== null && Types.isPlainObject(data)
-        ? options.helper.attributes(data, this.api.options.stripMetadata)
+        ? options.helper.attributes(
+            data as { [name: string]: any },
+            this.api.options.stripMetadata,
+          )
         : data
     ) as T | null;
 

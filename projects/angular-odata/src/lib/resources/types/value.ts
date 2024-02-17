@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { ODataApi } from '../../api';
 import { $VALUE } from '../../constants';
 import { ODataStructuredType } from '../../schema/structured-type';
-import { PathSegmentNames } from '../../types';
+import { PathSegment } from '../../types';
 import { ODataPathSegments } from '../path';
 import { ODataQueryOptions } from '../query';
 import { ODataResource } from '../resource';
@@ -22,12 +22,12 @@ export class ODataValueResource<T> extends ODataResource<T> {
       schema?: ODataStructuredType<V>;
       segments: ODataPathSegments;
       query?: ODataQueryOptions<V>;
-    }
+    },
   ) {
     const baseType = type;
     const bindingType = schema?.type();
 
-    const segment = segments.add(PathSegmentNames.value, $VALUE);
+    const segment = segments.add(PathSegment.value, $VALUE);
     if (schema !== undefined) segment.type(schema.type());
     else if (type !== undefined) segment.type(type);
 
@@ -50,7 +50,7 @@ export class ODataValueResource<T> extends ODataResource<T> {
   //#endregion
 
   //#region Requests
-  protected override get(options?: ODataOptions): Observable<T> {
+  protected override get(options: ODataOptions = {}): Observable<T> {
     return super.get({ responseType: 'value', ...options });
   }
   //#endregion
