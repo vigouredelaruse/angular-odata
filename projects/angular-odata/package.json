@@ -29,6 +29,7 @@
     "@angular/core": ">=14.0.0"
   },
   "dependencies": {
+    "@wizardcontroller/horseless-tags-library": "^0.5.1",
     "tslib": "^2.3.0"
   },
   "sideEffects": false
